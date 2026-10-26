@@ -32,7 +32,7 @@ public class BodyScript : MonoBehaviour
         isCurrentBody = true;
         rb.constraints = RigidbodyConstraints2D.None;
         rb.constraints = RigidbodyConstraints2D.FreezeRotation;
-        gameObject.layer = LayerMask.NameToLayer("Default");
+        gameObject.layer = LayerMask.NameToLayer("Player");
     }
 
     public void LeftOldBody()
