@@ -11,6 +11,8 @@ public class BlackScreenUI : MonoBehaviour
     public int bodySize = 24;
     public Color textColor = new Color(0.85f, 0.85f, 0.8f);
     public float fadeTime = 0.4f;
+    //Draw through the main camera so the CRT effect also distorts this screen
+    public bool renderThroughCamera = true;
 
     private CanvasGroup group;
     private Text titleText;
@@ -31,7 +33,16 @@ public class BlackScreenUI : MonoBehaviour
         GameObject canvasObj = new GameObject("BlackScreenCanvas");
         canvasObj.transform.SetParent(transform, false);
         Canvas canvas = canvasObj.AddComponent<Canvas>();
-        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        if(renderThroughCamera && Camera.main != null)
+        {
+            canvas.renderMode = RenderMode.ScreenSpaceCamera;
+            canvas.worldCamera = Camera.main;
+            canvas.planeDistance = 1f;
+        }
+        else
+        {
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        }
         canvas.sortingOrder = 100;
         CanvasScaler scaler = canvasObj.AddComponent<CanvasScaler>();
         scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
