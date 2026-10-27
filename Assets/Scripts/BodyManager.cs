@@ -20,6 +20,8 @@ public class BodyManager : MonoBehaviour
     public int maxActive = 3;
     void Update()
     {
+        //Paused by swap screen or game over
+        if (Time.timeScale == 0f) return;
         if (Input.GetKeyDown(KeyCode.E))
         {
             TrySwapBody();

@@ -1,8 +1,10 @@
+using System;
 using UnityEngine;
 using UnityEngine.AI;
 
 public class Enemy : MonoBehaviour
 {
+    public static event Action OnPlayerKilled;
     public enum EnemyState {Wander , SoundTriggered , Chase , Return , Eat}
     public EnemyState currentState = EnemyState.Wander;
     [Header("References")]
@@ -49,6 +51,17 @@ public class Enemy : MonoBehaviour
     private float eatTimer;
     private BodyScript eatingBody;
 
+    [Header("Chase Look")]
+    public SpriteRenderer spriteRenderer;
+    public Sprite normalSprite;
+    public Sprite chaseSprite;
+    public AudioSource chaseAudio;
+    public float chaseSpeedMultiplier = 1.5f;
+    //Placeholder tint while there's no chase sprite yet
+    public Color placeholderChaseColor = new Color(1f, 0.3f, 0.3f);
+    private Color normalColor = Color.white;
+    private EnemyState lastState;
+
     void Start()
     {
         agent = GetComponent<NavMeshAgent>();
@@ -61,6 +74,14 @@ public class Enemy : MonoBehaviour
         {
             baitLayer = LayerMask.GetMask("Body");
         }
+        if(spriteRenderer == null) spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+        if(spriteRenderer != null)
+        {
+            normalColor = spriteRenderer.color;
+            if(normalSprite == null) normalSprite = spriteRenderer.sprite;
+        }
+        lastState = currentState;
+        ApplyStateLook();
     }
 
     void Update()
@@ -71,7 +92,8 @@ public class Enemy : MonoBehaviour
             playerDead = true;
             agent.isStopped = true;
             Debug.Log("Player ded.");
-            //TODO Gameover
+            if(chaseAudio != null) chaseAudio.Stop();
+            OnPlayerKilled?.Invoke();
             return;
         }
         if(currentState != EnemyState.Eat)
@@ -121,6 +143,29 @@ public class Enemy : MonoBehaviour
                 Eating();
                 break;
 
+        }
+        if(currentState != lastState)
+        {
+            lastState = currentState;
+            ApplyStateLook();
+        }
+    }
+
+    //Sprite, crying audio and speed all switch the moment the chase starts
+    void ApplyStateLook()
+    {
+        bool chasing = currentState == EnemyState.Chase;
+        agent.speed = chasing ? moveSpeed * chaseSpeedMultiplier : moveSpeed;
+        if(spriteRenderer != null)
+        {
+            Sprite sprite = chasing ? chaseSprite : normalSprite;
+            if(sprite != null) spriteRenderer.sprite = sprite;
+            spriteRenderer.color = chasing && chaseSprite == null ? placeholderChaseColor : normalColor;
+        }
+        if(chaseAudio != null)
+        {
+            if(chasing && !chaseAudio.isPlaying) chaseAudio.Play();
+            else if(!chasing) chaseAudio.Stop();
         }
     }
 
