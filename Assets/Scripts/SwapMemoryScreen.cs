@@ -8,6 +8,8 @@ public class SwapMemoryScreen : MonoBehaviour
 {
     public BlackScreenUI blackScreen;
     public BodyManager bodyManager;
+    //Off = letters still get revealed, but no black screen or pause
+    public bool showScreen = true;
 
     [Header("Name")]
     public string daughterName = "NADIA";
@@ -40,6 +42,7 @@ public class SwapMemoryScreen : MonoBehaviour
         {
             revealedCount++;
         }
+        if(!showScreen) return;
         string memory = "";
         if(memoryLines != null && memoryLines.Length > 0)
         {
