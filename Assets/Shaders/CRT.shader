@@ -1,20 +1,23 @@
-// Old CRT TV look for the Full Screen Pass Renderer Feature (Renderer2D)
-// Curved glass, scanlines, RGB mask, colour fringing, rolling band, noise, flicker, vignette
+// Old low-res CRT TV look for the Full Screen Pass Renderer Feature (Renderer2D)
+// The image is rebuilt at a low virtual resolution, then scanlines, phosphor mask,
+// colour bleed, fringing, rolling band, noise, flicker and vignette are applied per virtual pixel
 Shader "Jam/CRT"
 {
     Properties
     {
+        _Resolution ("Virtual Resolution (160x90 = half of 320x180)", Vector) = (160, 90, 0, 0)
         _Curvature ("Curvature", Range(0, 0.6)) = 0.18
-        _ScanlineCount ("Scanline Count (180 = one per game pixel)", Float) = 180
-        _ScanlineStrength ("Scanline Strength", Range(0, 1)) = 0.35
-        _MaskStrength ("RGB Mask Strength", Range(0, 1)) = 0.12
-        _Aberration ("Colour Fringing", Range(0, 0.02)) = 0.003
+        _ScanlineStrength ("Scanline Strength", Range(0, 1)) = 0.5
+        _MaskStrength ("RGB Mask Strength", Range(0, 1)) = 0.3
+        _Bleed ("Horizontal Colour Bleed", Range(0, 1)) = 0.35
+        _Aberration ("Colour Fringing (virtual pixels)", Range(0, 2)) = 0.5
+        _ColorSteps ("Colour Steps (0 = off)", Range(0, 32)) = 0
         _RollSpeed ("Rolling Band Speed", Float) = 0.12
         _RollStrength ("Rolling Band Strength", Range(0, 0.4)) = 0.08
-        _NoiseStrength ("Noise", Range(0, 0.3)) = 0.05
+        _NoiseStrength ("Noise", Range(0, 0.3)) = 0.06
         _FlickerStrength ("Flicker", Range(0, 0.2)) = 0.03
         _Vignette ("Vignette", Range(0, 1)) = 0.35
-        _Brightness ("Brightness", Range(0.5, 2)) = 1.1
+        _Brightness ("Brightness", Range(0.5, 2)) = 1.25
     }
 
     SubShader
@@ -33,11 +36,13 @@ Shader "Jam/CRT"
             #pragma vertex Vert
             #pragma fragment Frag
 
+            float4 _Resolution;
             float _Curvature;
-            float _ScanlineCount;
             float _ScanlineStrength;
             float _MaskStrength;
+            float _Bleed;
             float _Aberration;
+            float _ColorSteps;
             float _RollSpeed;
             float _RollStrength;
             float _NoiseStrength;
@@ -60,6 +65,22 @@ Shader "Jam/CRT"
                 return frac(p.x * p.y);
             }
 
+            // Sample the centre of a virtual pixel
+            half3 SamplePixel(float2 pixel)
+            {
+                float2 uv = (pixel + 0.5) / _Resolution.xy;
+                return SAMPLE_TEXTURE2D_X(_BlitTexture, sampler_PointClamp, uv).rgb;
+            }
+
+            // One virtual pixel with its neighbours bleeding in horizontally
+            half3 SampleBled(float2 pixel)
+            {
+                half3 centre = SamplePixel(pixel);
+                half3 left = SamplePixel(pixel - float2(1, 0));
+                half3 right = SamplePixel(pixel + float2(1, 0));
+                return lerp(centre, (left + centre * 2.0 + right) * 0.25, _Bleed);
+            }
+
             half4 Frag(Varyings input) : SV_Target
             {
                 UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
@@ -69,29 +90,39 @@ Shader "Jam/CRT"
                 if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0)
                     return half4(0, 0, 0, 1);
 
-                // Colour fringing, stronger towards the edges
-                float2 dir = uv - 0.5;
-                half r = SAMPLE_TEXTURE2D_X(_BlitTexture, sampler_PointClamp, uv + dir * _Aberration).r;
-                half g = SAMPLE_TEXTURE2D_X(_BlitTexture, sampler_PointClamp, uv).g;
-                half b = SAMPLE_TEXTURE2D_X(_BlitTexture, sampler_PointClamp, uv - dir * _Aberration).b;
-                half3 col = half3(r, g, b) * _Brightness;
+                float2 res = max(_Resolution.xy, 1.0);
+                float2 pos = uv * res;
+                float2 pixel = floor(pos);
+                float2 inPixel = frac(pos);
 
-                // Scanlines
-                float scan = sin(uv.y * _ScanlineCount * PI * 2.0) * 0.5 + 0.5;
-                col *= 1.0 - _ScanlineStrength * (1.0 - scan);
+                // Fringing: red and blue guns slightly out of line, in virtual pixels
+                float2 fringe = float2(_Aberration, 0);
+                half3 col;
+                col.r = SampleBled(floor(pos + fringe)).r;
+                col.g = SampleBled(pixel).g;
+                col.b = SampleBled(floor(pos - fringe)).b;
 
-                // RGB phosphor mask on screen pixel columns
-                float column = fmod(floor(input.texcoord.x * _ScreenParams.x), 3.0);
-                half3 mask = column < 1.0 ? half3(1, 0.7, 0.7) : (column < 2.0 ? half3(0.7, 1, 0.7) : half3(0.7, 0.7, 1));
+                if (_ColorSteps >= 2.0)
+                    col = floor(col * _ColorSteps + 0.5) / _ColorSteps;
+
+                col *= _Brightness;
+
+                // Fat scanlines: bright in the middle of each virtual row, dark gap between rows
+                float scan = sin(inPixel.y * PI);
+                col *= lerp(1.0, scan, _ScanlineStrength);
+
+                // Each virtual pixel split into R, G, B phosphor stripes
+                float stripe = floor(inPixel.x * 3.0);
+                half3 mask = stripe < 1.0 ? half3(1, 0.6, 0.6) : (stripe < 2.0 ? half3(0.6, 1, 0.6) : half3(0.6, 0.6, 1));
                 col *= lerp(half3(1, 1, 1), mask, _MaskStrength);
 
                 // Slow rolling band
                 float band = frac(uv.y + _Time.y * _RollSpeed);
                 col *= 1.0 - _RollStrength * (1.0 - smoothstep(0.0, 0.15, band));
 
-                // Static noise and whole-screen flicker
+                // Static per virtual pixel and whole-screen flicker
                 float frame = floor(_Time.y * 24.0);
-                col += (Hash(floor(uv * _ScreenParams.xy) + frame) - 0.5) * _NoiseStrength;
+                col += (Hash(pixel + frame) - 0.5) * _NoiseStrength;
                 col *= 1.0 - _FlickerStrength * Hash(float2(frame, 7.0));
 
                 // Vignette
