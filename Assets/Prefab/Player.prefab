@@ -171,5 +171,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BodyScript
   isCurrentBody: 1
+  isVacant: 0
+  isConsumed: 0
+  consumedColor: {r: 0.35, g: 0.05, b: 0.05, a: 1}
   customBodySO: {fileID: 11400000, guid: 705ae63b84ba5594da461a8fcb0d3357, type: 2}
   rb: {fileID: 1101334980787908009}

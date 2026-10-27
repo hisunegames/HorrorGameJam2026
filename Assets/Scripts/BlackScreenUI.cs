@@ -7,8 +7,10 @@ public class BlackScreenUI : MonoBehaviour
 {
     [Header("Look")]
     public Font font;
-    public int titleSize = 48;
-    public int bodySize = 24;
+    //Sizes are at 1280x720; the CRT squashes to 320x180, so keep body text big enough (~12+ game pixels)
+    public int titleSize = 96;
+    public int bodySize = 48;
+    public FontStyle fontStyle = FontStyle.Bold;
     public Color textColor = new Color(0.85f, 0.85f, 0.8f);
     public float fadeTime = 0.4f;
     //Draw through the main camera so the CRT effect also distorts this screen
@@ -68,6 +70,7 @@ public class BlackScreenUI : MonoBehaviour
         Text text = obj.AddComponent<Text>();
         text.font = font;
         text.fontSize = size;
+        text.fontStyle = fontStyle;
         text.color = textColor;
         text.alignment = TextAnchor.MiddleCenter;
         text.horizontalOverflow = HorizontalWrapMode.Wrap;
