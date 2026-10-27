@@ -14,7 +14,10 @@ public class GlassTrigger : MonoBehaviour
             {
                 invisibleWall.enabled = false;
             }
-            enemy.SoundTrigger(transform.position);
+            if(enemy != null)
+            {
+                enemy.SoundTrigger(transform.position);
+            }
         }
     }
 }

@@ -3,13 +3,14 @@ using UnityEngine.AI;
 
 public class Enemy : MonoBehaviour
 {
-    public enum EnemyState {Wander , SoundTriggered , Chase , Return}
+    public enum EnemyState {Wander , SoundTriggered , Chase , Return , Eat}
     public EnemyState currentState = EnemyState.Wander;
     [Header("References")]
     [SerializeField] Transform target;
     NavMeshAgent agent;
     public Collider2D wanderRoomBound;
     public LayerMask playerLayer;
+    public LayerMask baitLayer;
     public NavMeshObstacle invisibleWall;
 
     [Header("Wander Settings")]
@@ -40,7 +41,13 @@ public class Enemy : MonoBehaviour
     private float pathCheckTimer;
     private bool cachedCanReach;
     private bool playerDead;
+    private bool targetInSight;
     private NavMeshPath pathCache;
+
+    [Header("Bait")]
+    public float eatDuration = 3f;
+    private float eatTimer;
+    private BodyScript eatingBody;
 
     void Start()
     {
@@ -50,6 +57,10 @@ public class Enemy : MonoBehaviour
         agent.updateUpAxis = false;
         wanderCountTime = wanderInterval;
         pathCache = new NavMeshPath();
+        if(baitLayer == 0)
+        {
+            baitLayer = LayerMask.GetMask("Body");
+        }
     }
 
     void Update()
@@ -63,16 +74,29 @@ public class Enemy : MonoBehaviour
             //TODO Gameover
             return;
         }
+        if(currentState != EnemyState.Eat)
+        {
+            BodyScript bait = BaitInRange();
+            if(bait != null)
+            {
+                StartEating(bait);
+            }
+        }
         if(reChaseTimer > 0f) reChaseTimer -= Time.deltaTime;
         pathCheckTimer -= Time.deltaTime;
 
         if(pathCheckTimer <= 0f)
         {
             pathCheckTimer = pathCheckInterval;
+            //Nearest of player or left behind bodies, so an old body can pull the enemy off you
+            Transform seen = FindTarget();
+            targetInSight = seen != null;
+            if(seen != null) target = seen;
+            else if(!IsValidTarget(target)) target = null;
             cachedCanReach = CanReachPlayer();
         }
 
-        if(PlayerinSight()&& cachedCanReach && currentState != EnemyState.Chase && reChaseTimer <= 0f)
+        if(targetInSight && cachedCanReach && currentState != EnemyState.Chase && currentState != EnemyState.Eat && reChaseTimer <= 0f)
         {
             currentState = EnemyState.Chase;
             isWaitingAtSound = false;
@@ -93,12 +117,16 @@ public class Enemy : MonoBehaviour
             case EnemyState.Return:
                 ReturnBack();
                 break;
-            
+            case EnemyState.Eat:
+                Eating();
+                break;
+
         }
     }
 
     void Wandering()
     {
+        if(wanderPoints.Length == 0) return;
         wanderCountTime += Time.deltaTime;
         if(wanderCountTime >= wanderInterval||(!agent.pathPending && agent.remainingDistance < 0.1f))
         {
@@ -110,6 +138,18 @@ public class Enemy : MonoBehaviour
 
     void Chasing()
     {
+        if(target == null)
+        {
+            loseTimer += Time.deltaTime;
+            if(loseTimer >= loseTargetDelay)
+            {
+                reChaseTimer = reChaseCooldown;
+                currentState = EnemyState.Return;
+                agent.isStopped = false;
+                GoBackToStart();
+            }
+            return;
+        }
         float distancetoPlayer = Vector2.Distance(transform.position,target.position);
         bool lostPlayer = distancetoPlayer > chaseLoseDistance || !cachedCanReach;
         if(distancetoPlayer <= enemyKillRange)
@@ -131,8 +171,44 @@ public class Enemy : MonoBehaviour
                 reChaseTimer = reChaseCooldown;
                 currentState = EnemyState.Return;
                 agent.isStopped = false;
-                agent.SetDestination(wanderPoints[0].position);
+                GoBackToStart();
             }
+        }
+    }
+
+    void StartEating(BodyScript bait)
+    {
+        eatingBody = bait;
+        eatTimer = 0f;
+        currentState = EnemyState.Eat;
+        isWaitingAtSound = false;
+        agent.isStopped = true;
+        Debug.Log("Eating old body");
+    }
+
+    void Eating()
+    {
+        eatTimer += Time.deltaTime;
+        if(eatTimer >= eatDuration)
+        {
+            if(eatingBody != null)
+            {
+                eatingBody.Consume();
+            }
+            eatingBody = null;
+            target = null;
+            targetInSight = false;
+            currentState = EnemyState.Return;
+            agent.isStopped = false;
+            GoBackToStart();
+        }
+    }
+
+    void GoBackToStart()
+    {
+        if(wanderPoints.Length > 0)
+        {
+            agent.SetDestination(wanderPoints[0].position);
         }
     }
 
@@ -164,7 +240,7 @@ public class Enemy : MonoBehaviour
             if(timeCheckCounter >= timeChecking)
             {
                 currentState = EnemyState.Return;
-                agent.SetDestination(wanderPoints[0].position);
+                GoBackToStart();
                 isWaitingAtSound = false;
             }
         }
@@ -184,14 +260,47 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    bool PlayerinSight()
+    Transform FindTarget()
     {
-        Collider2D detectBody = Physics2D.OverlapCircle(transform.position,trackDistance,playerLayer);
-        return detectBody != null;
+        Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position,trackDistance,playerLayer | baitLayer);
+        Transform nearest = null;
+        float nearestDist = float.MaxValue;
+        foreach(var hit in hits)
+        {
+            if(!IsValidTarget(hit.transform)) continue;
+            float dist = Vector2.Distance(transform.position,hit.transform.position);
+            if(dist < nearestDist)
+            {
+                nearestDist = dist;
+                nearest = hit.transform;
+            }
+        }
+        return nearest;
+    }
+
+    //Current body or an uneaten left behind body. Fresh hosts are ignored
+    bool IsValidTarget(Transform t)
+    {
+        if(t == null) return false;
+        BodyScript body = t.GetComponent<BodyScript>();
+        if(body == null) return false;
+        return body.isCurrentBody || body.IsBait;
+    }
+
+    BodyScript BaitInRange()
+    {
+        Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position,enemyKillRange,baitLayer);
+        foreach(var hit in hits)
+        {
+            BodyScript body = hit.GetComponent<BodyScript>();
+            if(body != null && body.IsBait) return body;
+        }
+        return null;
     }
 
     bool CanReachPlayer()
     {
+        if(target == null) return false;
         if(!NavMesh.SamplePosition(target.position, out NavMeshHit hit, 1.5f, NavMesh.AllAreas))
             return false;
  

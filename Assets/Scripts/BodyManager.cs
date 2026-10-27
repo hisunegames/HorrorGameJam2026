@@ -1,9 +1,14 @@
+using System;
 using System.Collections.Generic;
 using Unity.Cinemachine;
 using UnityEngine;
 
 public class BodyManager : MonoBehaviour
 {
+    //(old body, new body, swap count) - for name reveal / fade / audio to listen to
+    public event Action<BodyScript, BodyScript, int> OnBodySwapped;
+    public int swapCount = 0;
+
     public BodyScript currentBody;
     public CinemachineCamera cinemachineCamera;
     public LayerMask bodyLayer;
@@ -25,25 +30,37 @@ public class BodyManager : MonoBehaviour
     {
         if(currentBody == null) return;
 
-        Collider2D detectBody = Physics2D.OverlapCircle(currentBody.transform.position,interactradius,bodyLayer);
+        BodyScript target = FindNearestBody();
 
-
-        if(detectBody != null)
+        if(target != null)
         {
-            BodyScript target = detectBody.GetComponent<BodyScript>();
-            if(target != currentBody)
-            {
-                DoSwapBody(currentBody,target);
-            }
-            else
-            {
-                Debug.Log("Same body");
-            }
+            DoSwapBody(currentBody,target);
         }
         else
         {
             Debug.Log("No Body");
         }
+    }
+
+    //Nearest body in range that isn't us and hasn't been used up already
+    BodyScript FindNearestBody()
+    {
+        Collider2D[] hits = Physics2D.OverlapCircleAll(currentBody.transform.position,interactradius,bodyLayer);
+        BodyScript nearest = null;
+        float nearestDist = float.MaxValue;
+        foreach(var hit in hits)
+        {
+            BodyScript body = hit.GetComponent<BodyScript>();
+            if(body == null || body == currentBody || body.isVacant) continue;
+
+            float dist = Vector2.Distance(currentBody.transform.position,body.transform.position);
+            if(dist < nearestDist)
+            {
+                nearestDist = dist;
+                nearest = body;
+            }
+        }
+        return nearest;
     }
 
 
@@ -77,6 +94,9 @@ public class BodyManager : MonoBehaviour
         }
 
         //TODO loop in activeAbilities list to check if there is nearsight bool true so it activate post process of nearsight
+
+        swapCount++;
+        OnBodySwapped?.Invoke(currentBody,targetBody,swapCount);
     }
 
 }
