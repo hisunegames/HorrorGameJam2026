@@ -5,19 +5,19 @@ Shader "Jam/CRT"
 {
     Properties
     {
-        _Resolution ("Virtual Resolution (160x90 = half of 320x180)", Vector) = (160, 90, 0, 0)
-        _Curvature ("Curvature", Range(0, 0.6)) = 0.18
-        _ScanlineStrength ("Scanline Strength", Range(0, 1)) = 0.5
-        _MaskStrength ("RGB Mask Strength", Range(0, 1)) = 0.3
-        _Bleed ("Horizontal Colour Bleed", Range(0, 1)) = 0.35
-        _Aberration ("Colour Fringing (virtual pixels)", Range(0, 2)) = 0.5
+        _Resolution ("Virtual Resolution (320x180 = game pixels, 160x90 = chunkier)", Vector) = (320, 180, 0, 0)
+        _Curvature ("Curvature", Range(0, 0.6)) = 0.1
+        _ScanlineStrength ("Scanline Strength", Range(0, 1)) = 0.25
+        _MaskStrength ("RGB Mask Strength", Range(0, 1)) = 0.1
+        _Bleed ("Horizontal Colour Bleed", Range(0, 1)) = 0.15
+        _Aberration ("Colour Fringing (virtual pixels)", Range(0, 2)) = 0.25
         _ColorSteps ("Colour Steps (0 = off)", Range(0, 32)) = 0
-        _RollSpeed ("Rolling Band Speed", Float) = 0.12
-        _RollStrength ("Rolling Band Strength", Range(0, 0.4)) = 0.08
-        _NoiseStrength ("Noise", Range(0, 0.3)) = 0.06
-        _FlickerStrength ("Flicker", Range(0, 0.2)) = 0.03
-        _Vignette ("Vignette", Range(0, 1)) = 0.35
-        _Brightness ("Brightness", Range(0.5, 2)) = 1.25
+        _RollSpeed ("Rolling Band Speed", Float) = 0.08
+        _RollStrength ("Rolling Band Strength", Range(0, 0.4)) = 0.04
+        _NoiseStrength ("Noise", Range(0, 0.3)) = 0.025
+        _FlickerStrength ("Flicker", Range(0, 0.2)) = 0.015
+        _Vignette ("Vignette", Range(0, 1)) = 0.25
+        _Brightness ("Brightness", Range(0.5, 2)) = 1.1
     }
 
     SubShader
