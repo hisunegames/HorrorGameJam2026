@@ -32,7 +32,7 @@ public class PlayerSprint : MonoBehaviour
 
     void Awake()
     {
-        if(bodyManager == null) bodyManager = FindAnyObjectByType<BodyManager>();
+        if(bodyManager == null) bodyManager = GameManager.Get<BodyManager>();
         Stamina = maxStamina;
     }
 

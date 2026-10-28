@@ -23,7 +23,7 @@ public class SwapMemoryScreen : MonoBehaviour
     void Awake()
     {
         if(blackScreen == null) blackScreen = GetComponent<BlackScreenUI>();
-        if(bodyManager == null) bodyManager = FindAnyObjectByType<BodyManager>();
+        if(bodyManager == null) bodyManager = GameManager.Get<BodyManager>();
     }
 
     void OnEnable()
