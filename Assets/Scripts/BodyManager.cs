@@ -18,6 +18,7 @@ public class BodyManager : MonoBehaviour
     /*[Header("NearsightPostprocess")]
     Add postprocess*/
     public int maxActive = 3;
+    public DialogueController dialogueController;
     void Update()
     {
         //Paused by swap screen or game over
@@ -25,6 +26,33 @@ public class BodyManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.E))
         {
             TrySwapBody();
+        }
+
+        if (Input.GetKeyDown(KeyCode.F)) 
+        {
+            TryShowDialogue();
+        }
+    }
+
+    void TryShowDialogue()
+    {
+        if(currentBody == null) return;
+
+        BodyScript target = FindNearestBody();
+
+        if(target != null)
+        {
+            DialogueData dialogueData = target.GetComponent<DialogueData>();
+            if (dialogueData == null || dialogueData.dialogueLines.Length == 0)
+            {
+                Debug.Log("No Dialogue");
+                return;
+            }
+            dialogueController.StartDialogue(dialogueData.dialogueLines);
+        }
+        else
+        {
+            Debug.Log("No Body");
         }
     }
 
