@@ -4,10 +4,11 @@ using UnityEngine;
 
 public class DialogueController : MonoBehaviour
 {
+    public GameObject dialoguePanel;
     public TextMeshProUGUI dialogueText;
-    public string[] dialogueLines;
     public int index = 0;
-    public bool isTyping = false;
+    private string[] dialogueLines;
+    private bool isTyping = false;
 
     // void Start()
     // {
@@ -16,6 +17,9 @@ public class DialogueController : MonoBehaviour
 
     void Update()
     {
+        if (dialogueLines == null || dialogueLines.Length == 0)
+            return;
+        
         if (Input.GetKeyDown(KeyCode.Space))
         {
             if (isTyping)
@@ -39,6 +43,9 @@ public class DialogueController : MonoBehaviour
         else
         {
             dialogueText.text = string.Empty;
+            index = 0;
+            dialogueLines = null;
+            dialoguePanel.SetActive(false);
         }
     }
 
@@ -46,6 +53,8 @@ public class DialogueController : MonoBehaviour
     {
         index = 0;
         dialogueLines = lines;
+        dialoguePanel.SetActive(true);
+        dialogueText.text = string.Empty;
         StartCoroutine(DisplayLine(dialogueLines[index]));
     }
 
