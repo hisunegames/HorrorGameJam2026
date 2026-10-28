@@ -73,6 +73,9 @@ public class Enemy : MonoBehaviour
     //Pause at the door before coming out the other side, gives the player a head start
     public float doorFollowDelay = 1f;
     public float doorReachDistance = 1f;
+    [Tooltip("After coming out of a door it keeps hunting this long even if the player is past Chase Lose Distance")]
+    public float doorChaseGrace = 5f;
+    private float doorGraceTimer;
     private Queue<RoomDoor> pendingDoors = new Queue<RoomDoor>();
     //Doors to walk back through to get home, last one is in the current room
     private List<RoomDoor> doorTrail = new List<RoomDoor>();
@@ -246,7 +249,10 @@ public class Enemy : MonoBehaviour
             return;
         }
         float distancetoPlayer = Vector2.Distance(transform.position,target.position);
-        bool lostPlayer = distancetoPlayer > chaseLoseDistance || !cachedCanReach;
+        //Just came through a door behind the player: they're usually across the room by now, don't give up on distance yet
+        if(doorGraceTimer > 0f) doorGraceTimer -= Time.deltaTime;
+        bool tooFar = distancetoPlayer > chaseLoseDistance && doorGraceTimer <= 0f;
+        bool lostPlayer = tooFar || !cachedCanReach;
         if(distancetoPlayer <= enemyKillRange)
         {
             Debug.Log("Player ded.");
@@ -263,6 +269,7 @@ public class Enemy : MonoBehaviour
             loseTimer += Time.deltaTime;
             if(loseTimer >= loseTargetDelay)
             {
+                Debug.Log(tooFar ? $"Enemy lost the player: too far ({distancetoPlayer:0.0} > {chaseLoseDistance})" : "Enemy lost the player: no path to them", this);
                 reChaseTimer = reChaseCooldown;
                 currentState = EnemyState.Return;
                 agent.isStopped = false;
@@ -386,6 +393,7 @@ public class Enemy : MonoBehaviour
         followDoor = null;
         currentState = EnemyState.Chase;
         loseTimer = 0f;
+        doorGraceTimer = doorChaseGrace;
         cachedCanReach = CanReachPlayer();
     }
 

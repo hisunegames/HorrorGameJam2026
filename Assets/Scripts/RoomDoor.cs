@@ -31,7 +31,7 @@ public class RoomDoor : MonoBehaviour
     void Awake()
     {
         trigger = GetComponent<BoxCollider2D>();
-        if(blackScreen == null) blackScreen = FindAnyObjectByType<BlackScreenUI>();
+        if(blackScreen == null) blackScreen = GameManager.Get<BlackScreenUI>();
     }
 
     void OnDisable()

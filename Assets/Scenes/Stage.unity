@@ -8276,6 +8276,17 @@ Transform:
   m_Children: []
   m_Father: {fileID: 115964159}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &678623251 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5633052944073681888, guid: bf2077757879b3a4683c1eb6751b315d, type: 3}
+  m_PrefabInstance: {fileID: 1612230680}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
 --- !u!1 &715608236
 GameObject:
   m_ObjectHideFlags: 0
@@ -18637,96 +18648,6 @@ Tilemap:
     e31: 0
     e32: 0
     e33: 1
---- !u!1 &1134209353
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1134209357}
-  - component: {fileID: 1134209356}
-  - component: {fileID: 1134209355}
-  - component: {fileID: 1134209354}
-  m_Layer: 0
-  m_Name: GameUI (1)
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1134209354
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1134209353}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3b4f6b48056ab71419e8870703314791, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SwapMemoryScreen
-  blackScreen: {fileID: 1134209356}
-  bodyManager: {fileID: 0}
-  showScreen: 1
-  daughterName: NADIA
-  memoryLines: []
-  recurringLine: 
-  holdTime: 3
---- !u!114 &1134209355
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1134209353}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 72b4d93e8b51fb94eaeb30e1966fe4e5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::GameOverScreen
-  blackScreen: {fileID: 1134209356}
-  deathTitle: YOU DIED
-  deathLine: 'The knowledge dies with you.
-
-
-    Press R to try again'
---- !u!114 &1134209356
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1134209353}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f464459a82ea91948b8989498a90921f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BlackScreenUI
-  font: {fileID: 0}
-  titleSize: 48
-  bodySize: 24
-  fontStyle: 1
-  textColor: {r: 0.85, g: 0.85, b: 0.8, a: 1}
-  fadeTime: 0.4
-  renderThroughCamera: 1
---- !u!4 &1134209357
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1134209353}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -15.096729, y: -11.08806, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1160169409
 GameObject:
   m_ObjectHideFlags: 0
@@ -18962,6 +18883,204 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 2107975697}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1175321535
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1175321544}
+  - component: {fileID: 1175321543}
+  - component: {fileID: 1175321542}
+  - component: {fileID: 1175321541}
+  - component: {fileID: 1175321540}
+  - component: {fileID: 1175321539}
+  - component: {fileID: 1175321538}
+  - component: {fileID: 1175321537}
+  - component: {fileID: 1175321536}
+  m_Layer: 0
+  m_Name: GameManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1175321536
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1175321535}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c25d2d38e64ba7540b36eaa19b45d1f0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerHUD
+  bodyManager: {fileID: 1175321542}
+  sprint: {fileID: 1175321541}
+  font: {fileID: 12800000, guid: e3265ab4bf004d28a9537516768c1c75, type: 3}
+  promptSize: 32
+  textColor: {r: 0.9, g: 0.9, b: 0.85, a: 1}
+  promptHeight: 1.1
+  renderThroughCamera: 0
+  barSize: {x: 240, y: 14}
+  barColor: {r: 0.85, g: 0.85, b: 0.8, a: 1}
+  exhaustedColor: {r: 0.7, g: 0.1, b: 0.1, a: 1}
+  hideWhenFull: 1
+--- !u!114 &1175321537
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1175321535}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3b4f6b48056ab71419e8870703314791, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SwapMemoryScreen
+  blackScreen: {fileID: 1175321539}
+  bodyManager: {fileID: 0}
+  showScreen: 1
+  daughterName: NADIA
+  memoryLines: []
+  recurringLine: 
+  holdTime: 3
+--- !u!114 &1175321538
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1175321535}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 72b4d93e8b51fb94eaeb30e1966fe4e5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameOverScreen
+  blackScreen: {fileID: 1175321539}
+  deathTitle: YOU DIED
+  deathLine: 'The knowledge dies with you.
+
+
+    Press R to try again'
+--- !u!114 &1175321539
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1175321535}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f464459a82ea91948b8989498a90921f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BlackScreenUI
+  font: {fileID: 0}
+  titleSize: 48
+  bodySize: 24
+  fontStyle: 1
+  textColor: {r: 0.85, g: 0.85, b: 0.8, a: 1}
+  fadeTime: 0.4
+  renderThroughCamera: 1
+--- !u!114 &1175321540
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1175321535}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 45139be97a6a08e7a8587f042b5b3c8b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+  dialoguePanel: {fileID: 1775744962}
+  dialogueText: {fileID: 678623251}
+  index: 0
+--- !u!114 &1175321541
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1175321535}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 16648db945a3d5b4c921d1961eaff94a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerSprint
+  bodyManager: {fileID: 0}
+  sprintKey: 304
+  sprintMultiplier: 1.6
+  maxStamina: 100
+  drainPerSecond: 35
+  regenPerSecond: 20
+  regenDelay: 0.8
+  recoverAt: 30
+  noiseLoudness: 1
+  noiseInterval: 0.35
+--- !u!114 &1175321542
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1175321535}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b0327cdc571e03f4cb557de06662da9d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BodyManager
+  swapCount: 0
+  currentBody: {fileID: 0}
+  cinemachineCamera: {fileID: 1923621479}
+  bodyLayer:
+    serializedVersion: 2
+    m_Bits: 64
+  interactradius: 1
+  activeAbilities:
+  - {fileID: 11400000, guid: 705ae63b84ba5594da461a8fcb0d3357, type: 2}
+  maxActive: 3
+  dialogueController: {fileID: 1175321540}
+--- !u!114 &1175321543
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1175321535}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3fe8e6f570948454cb1db087e649fa89, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameManager
+  playerSpeedMultiplier: 0.7
+  bodyManager: {fileID: 0}
+  sprint: {fileID: 0}
+  hud: {fileID: 0}
+  blackScreen: {fileID: 0}
+  gameOver: {fileID: 0}
+  swapScreen: {fileID: 0}
+  dialogue: {fileID: 0}
+--- !u!4 &1175321544
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1175321535}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1176316055
 GameObject:
@@ -23845,11 +23964,6 @@ SortingGroup:
   m_SortingOrder: 31
   m_SortAtRoot: 0
   m_Sort3DAs2D: 0
---- !u!1 &1514697615 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 5346996889119268916, guid: bf2077757879b3a4683c1eb6751b315d, type: 3}
-  m_PrefabInstance: {fileID: 1612230680}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1516050464
 GameObject:
   m_ObjectHideFlags: 0
@@ -26160,47 +26274,17 @@ PrefabInstance:
       propertyPath: cinemachineCamera
       value: 
       objectReference: {fileID: 1923621479}
-    m_RemovedComponents: []
+    - target: {fileID: 9091697658109963816, guid: bf2077757879b3a4683c1eb6751b315d, type: 3}
+      propertyPath: dialogueController
+      value: 
+      objectReference: {fileID: 1175321540}
+    m_RemovedComponents:
+    - {fileID: 9091697658109963816, guid: bf2077757879b3a4683c1eb6751b315d, type: 3}
+    - {fileID: 1645328095544682603, guid: bf2077757879b3a4683c1eb6751b315d, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 5346996889119268916, guid: bf2077757879b3a4683c1eb6751b315d, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1612230683}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: bf2077757879b3a4683c1eb6751b315d, type: 3}
---- !u!114 &1612230681 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 9091697658109963816, guid: bf2077757879b3a4683c1eb6751b315d, type: 3}
-  m_PrefabInstance: {fileID: 1612230680}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1514697615}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b0327cdc571e03f4cb557de06662da9d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BodyManager
---- !u!114 &1612230683
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1514697615}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 16648db945a3d5b4c921d1961eaff94a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerSprint
-  bodyManager: {fileID: 0}
-  sprintKey: 304
-  sprintMultiplier: 1.6
-  maxStamina: 100
-  drainPerSecond: 35
-  regenPerSecond: 20
-  regenDelay: 0.8
-  recoverAt: 30
-  noiseLoudness: 1
-  noiseInterval: 0.35
 --- !u!1 &1613635281
 GameObject:
   m_ObjectHideFlags: 0
@@ -27646,61 +27730,6 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 1, y: 0.6}
   m_EdgeRadius: 0
---- !u!1 &1733446689
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1733446690}
-  - component: {fileID: 1733446691}
-  m_Layer: 0
-  m_Name: GameUI
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1733446690
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1733446689}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -3.67837, y: 0.43507, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1733446691
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1733446689}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c25d2d38e64ba7540b36eaa19b45d1f0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerHUD
-  bodyManager: {fileID: 1612230681}
-  sprint: {fileID: 1612230683}
-  font: {fileID: 12800000, guid: e3265ab4bf004d28a9537516768c1c75, type: 3}
-  promptSize: 32
-  textColor: {r: 0.9, g: 0.9, b: 0.85, a: 1}
-  promptHeight: 1.1
-  renderThroughCamera: 0
-  barSize: {x: 240, y: 14}
-  barColor: {r: 0.85, g: 0.85, b: 0.8, a: 1}
-  exhaustedColor: {r: 0.7, g: 0.1, b: 0.1, a: 1}
-  hideWhenFull: 1
 --- !u!1 &1748700836
 GameObject:
   m_ObjectHideFlags: 0
@@ -28910,6 +28939,11 @@ Tilemap:
     e31: 0
     e32: 0
     e33: 1
+--- !u!1 &1775744962 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4475151995747010406, guid: bf2077757879b3a4683c1eb6751b315d, type: 3}
+  m_PrefabInstance: {fileID: 1612230680}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1779353478
 GameObject:
   m_ObjectHideFlags: 0
@@ -40961,14 +40995,13 @@ SceneRoots:
   - {fileID: 817438056}
   - {fileID: 1728961452}
   - {fileID: 1358696914}
-  - {fileID: 1733446690}
   - {fileID: 1960566270}
   - {fileID: 459591547}
   - {fileID: 1820535179}
   - {fileID: 1176316058}
-  - {fileID: 1134209357}
   - {fileID: 369894303}
   - {fileID: 2027924406}
   - {fileID: 1160169411}
   - {fileID: 487413022}
   - {fileID: 33907871}
+  - {fileID: 1175321544}

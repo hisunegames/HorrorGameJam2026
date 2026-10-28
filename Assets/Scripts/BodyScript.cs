@@ -38,7 +38,7 @@ public class BodyScript : MonoBehaviour
             float horizontal = Input.GetAxis("Horizontal");
             float vertical = Input.GetAxis("Vertical");
 
-            rb.linearVelocity = new Vector2(horizontal,vertical)*customBodySO.moveSpeed*speedMultiplier;
+            rb.linearVelocity = new Vector2(horizontal,vertical)*customBodySO.moveSpeed*speedMultiplier*GameManager.PlayerSpeedMultiplier;
         }
     }
 

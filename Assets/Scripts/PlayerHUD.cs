@@ -37,8 +37,8 @@ public class PlayerHUD : MonoBehaviour
 
     void Awake()
     {
-        if(bodyManager == null) bodyManager = FindAnyObjectByType<BodyManager>();
-        if(sprint == null) sprint = FindAnyObjectByType<PlayerSprint>();
+        if(bodyManager == null) bodyManager = GameManager.Get<BodyManager>();
+        if(sprint == null) sprint = GameManager.Get<PlayerSprint>();
         if(font == null) font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
         BuildCanvas();
     }
