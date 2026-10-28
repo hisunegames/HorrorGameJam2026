@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8879017742833820661}
   - component: {fileID: 779886470870390116}
+  - component: {fileID: 8231875340155168502}
   - component: {fileID: 4757900227200805170}
   - component: {fileID: 5257058772917471382}
   - component: {fileID: 3084518160078094590}
@@ -95,6 +96,21 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
   m_BlendShapeWeights: []
+--- !u!114 &8231875340155168502
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1193959345115943865}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b585940392e344b9b939ac7949f8ea69, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DialogueData
+  dialogueLines:
+  - Hello! I am a mechanic. I can fix your stuff.
+  - Feel free to call me when you have problems.
 --- !u!50 &4757900227200805170
 Rigidbody2D:
   serializedVersion: 5
@@ -171,5 +187,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BodyScript
   isCurrentBody: 0
+  isVacant: 0
+  isConsumed: 0
+  consumedColor: {r: 0.35, g: 0.05, b: 0.05, a: 1}
   customBodySO: {fileID: 11400000, guid: 54b5d96bd4d25834582b04c8ec1e1753, type: 2}
   rb: {fileID: 4757900227200805170}
