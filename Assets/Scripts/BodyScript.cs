@@ -12,6 +12,8 @@ public class BodyScript : MonoBehaviour
     public CustomBodySO customBodySO;
     [Header("General Component")]
     public Rigidbody2D rb;
+    //Set by PlayerSprint
+    [HideInInspector] public float speedMultiplier = 1f;
     private string originalTag;
 
     public bool IsBait => isVacant && !isConsumed;
@@ -36,7 +38,7 @@ public class BodyScript : MonoBehaviour
             float horizontal = Input.GetAxis("Horizontal");
             float vertical = Input.GetAxis("Vertical");
 
-            rb.linearVelocity = new Vector2(horizontal,vertical)*customBodySO.moveSpeed;
+            rb.linearVelocity = new Vector2(horizontal,vertical)*customBodySO.moveSpeed*speedMultiplier;
         }
     }
 

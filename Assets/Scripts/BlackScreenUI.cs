@@ -98,22 +98,33 @@ public class BlackScreenUI : MonoBehaviour
     //Unscaled so it still runs while the game is paused
     public IEnumerator FadeIn()
     {
-        yield return Fade(1f);
+        yield return Fade(1f, fadeTime);
     }
 
     public IEnumerator FadeOut()
     {
-        yield return Fade(0f);
+        yield return Fade(0f, fadeTime);
     }
 
-    IEnumerator Fade(float targetAlpha)
+    //Custom length, e.g. a quick dip to black between rooms
+    public IEnumerator FadeIn(float duration)
+    {
+        yield return Fade(1f, duration);
+    }
+
+    public IEnumerator FadeOut(float duration)
+    {
+        yield return Fade(0f, duration);
+    }
+
+    IEnumerator Fade(float targetAlpha, float duration)
     {
         float start = group.alpha;
         float t = 0f;
-        while(t < fadeTime)
+        while(t < duration)
         {
             t += Time.unscaledDeltaTime;
-            group.alpha = Mathf.Lerp(start, targetAlpha, t / fadeTime);
+            group.alpha = Mathf.Lerp(start, targetAlpha, t / duration);
             yield return null;
         }
         group.alpha = targetAlpha;

@@ -25,8 +25,8 @@ MonoBehaviour:
     probeSamplingDebugTexture: {fileID: 2800000, guid: 24ec0e140fb444a44ab96ee80844e18e, type: 3}
     probeVolumeBlendStatesCS: {fileID: 0}
   m_RendererFeatures:
-  - {fileID: 561858752858774498}
-  m_RendererFeatureMap: e25b17128f1fcc07
+  - {fileID: 8658523844133350571}
+  m_RendererFeatureMap: ab6cd1b88f412978
   m_LayerMask:
     serializedVersion: 2
     m_Bits: 4294967295
@@ -56,7 +56,7 @@ MonoBehaviour:
   m_PostProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
   m_DefaultMaterialType: 0
   m_DefaultCustomMaterial: {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
---- !u!114 &561858752858774498
+--- !u!114 &8658523844133350571
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
@@ -65,9 +65,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b00045f12942b46c698459096c89274e, type: 3}
-  m_Name: FullScreenPassRendererFeature
-  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.FullScreenPassRendererFeature
+  m_Script: {fileID: 11500000, guid: 764df8974224f48448c2c1aa42b4eae8, type: 3}
+  m_Name: CRTRendererFeature
+  m_EditorClassIdentifier: Assembly-CSharp::CRTRendererFeature
   m_Active: 1
   injectionPoint: 600
   fetchColorBuffer: 1
@@ -76,3 +76,4 @@ MonoBehaviour:
   passIndex: 0
   bindDepthStencilAttachment: 0
   m_Version: 1
+  showInSceneView: 1

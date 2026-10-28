@@ -11,8 +11,9 @@ GameObject:
   - component: {fileID: 8059924159885551138}
   - component: {fileID: 5319517073733035672}
   - component: {fileID: 1101334980787908009}
-  - component: {fileID: 2907440638544802094}
+  - component: {fileID: 9187563263652002845}
   - component: {fileID: 806137048602534902}
+  - component: {fileID: 5065949955965377189}
   m_Layer: 7
   m_Name: Player
   m_TagString: Player
@@ -84,7 +85,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 2
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 8906585325586a44391b3d683e7597ee, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -122,8 +123,8 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 1
   m_Constraints: 4
---- !u!58 &2907440638544802094
-CircleCollider2D:
+--- !u!61 &9187563263652002845
+BoxCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -152,12 +153,22 @@ CircleCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 1
+  m_IsTrigger: 0
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
-  m_Radius: 1
+  m_Offset: {x: 0, y: 0.375}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0.5, y: 0}
+    oldSize: {x: 0.4375, y: 0.75}
+    newSize: {x: 1, y: 1}
+    adaptiveTilingThreshold: 0.5
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Size: {x: 0.55, y: 0.85}
+  m_EdgeRadius: 0
 --- !u!114 &806137048602534902
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -176,3 +187,19 @@ MonoBehaviour:
   consumedColor: {r: 0.35, g: 0.05, b: 0.05, a: 1}
   customBodySO: {fileID: 11400000, guid: 705ae63b84ba5594da461a8fcb0d3357, type: 2}
   rb: {fileID: 1101334980787908009}
+--- !u!114 &5065949955965377189
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6646460448080858105}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a4322e0275b4c434eab34e16c14a4cf9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BodyFacing
+  frontSprite: {fileID: 21300000, guid: 8906585325586a44391b3d683e7597ee, type: 3}
+  backSprite: {fileID: 21300000, guid: 7e7fd0039dac0a34e8bf503efa9f14b2, type: 3}
+  sideSprite: {fileID: 21300000, guid: 951ecd782e113ee4fb9c18b256f20c0e, type: 3}
+  minSpeed: 0.1

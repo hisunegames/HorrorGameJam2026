@@ -19,6 +19,28 @@ public class BodyManager : MonoBehaviour
     Add postprocess*/
     public int maxActive = 3;
     public DialogueController dialogueController;
+
+    void Start()
+    {
+        //Not assigned in the scene: use the body marked as current (the Player prefab is)
+        if(currentBody == null)
+        {
+            foreach(var body in FindObjectsByType<BodyScript>())
+            {
+                if(body.isCurrentBody)
+                {
+                    currentBody = body;
+                    break;
+                }
+            }
+        }
+        //Follow the starting body without having to set Tracking Target by hand
+        if(cinemachineCamera != null && currentBody != null)
+        {
+            cinemachineCamera.Target.TrackingTarget = currentBody.transform;
+        }
+    }
+
     void Update()
     {
         //Paused by swap screen or game over
@@ -72,9 +94,10 @@ public class BodyManager : MonoBehaviour
         }
     }
 
-    //Nearest body in range that isn't us and hasn't been used up already
-    BodyScript FindNearestBody()
+    //Nearest body in range that isn't us and hasn't been used up already. Public for the interact prompt
+    public BodyScript FindNearestBody()
     {
+        if(currentBody == null) return null;
         Collider2D[] hits = Physics2D.OverlapCircleAll(currentBody.transform.position,interactradius,bodyLayer);
         BodyScript nearest = null;
         float nearestDist = float.MaxValue;
