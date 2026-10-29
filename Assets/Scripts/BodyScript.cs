@@ -52,7 +52,8 @@ public class BodyScript : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (isCurrentBody && (isPlayingDead || isHiding))
+        //Lying still, in a locker, or reading a note
+        if (isCurrentBody && (isPlayingDead || isHiding || ModalUI.IsOpen))
         {
             rb.linearVelocity = Vector2.zero;
         }
@@ -153,6 +154,24 @@ public class BodyScript : MonoBehaviour
         }
         SpriteRenderer sr = GetComponent<SpriteRenderer>();
         if(sr == null) return;
+        if(collapseAnimator == null) collapseAnimator = GetComponent<Animator>();
+        //Falls over with its own collapse animation (unless it's already lying there) and bleeds out
+        if(collapseAnimator != null && collapseAnimator.runtimeAnimatorController != null)
+        {
+            BodyFacing facing = GetComponent<BodyFacing>();
+            if(facing != null) facing.enabled = false;
+            if(!collapseAnimator.enabled)
+            {
+                collapseAnimator.updateMode = AnimatorUpdateMode.Normal;
+                collapseAnimator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
+                collapseAnimator.speed = 1f;
+                collapseAnimator.enabled = true;
+            }
+            sr.color = Color.white;
+            BodyDrag drag = GameManager.Get<BodyDrag>();
+            BloodTrail.Add(transform.position, drag != null ? drag.bloodSprite : null);
+            return;
+        }
         Sprite corpse = customBodySO != null ? customBodySO.corpseSprite : null;
         if(corpse != null)
         {

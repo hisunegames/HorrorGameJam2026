@@ -27,16 +27,8 @@ public class PlayerSprint : MonoBehaviour
 
     public float Stamina { get; private set; }
     public float Stamina01 => MaxStamina > 0f ? Stamina / MaxStamina : 0f;
-    //maxStamina scaled by the current body (CustomBodySO.staminaMultiplier)
-    public float MaxStamina
-    {
-        get
-        {
-            BodyScript body = bodyManager != null ? bodyManager.currentBody : null;
-            float mult = body != null && body.customBodySO != null ? body.customBodySO.staminaMultiplier : 1f;
-            return maxStamina * mult;
-        }
-    }
+    //Same for every body (No Legs' bonus only makes playing dead last longer, see PlayDead)
+    public float MaxStamina => maxStamina;
     public bool IsSprinting { get; private set; }
     public bool IsExhausted { get; private set; }
     //Adrenaline: boosted (free, faster sprinting) then crashing (slow, no sprint, no stamina regen)
@@ -75,7 +67,7 @@ public class PlayerSprint : MonoBehaviour
         }
         else if(crashTimer > 0f) crashTimer -= Time.deltaTime;
 
-        bool moving = !body.isPlayingDead && !body.isHiding && PlayerInput.RawMove().sqrMagnitude > 0.01f;
+        bool moving = !body.isPlayingDead && !body.isHiding && !ModalUI.IsOpen && PlayerInput.RawMove().sqrMagnitude > 0.01f;
         //Slow bodies can't sprint, nor can you while dragging or crashing
         bool canSprint = (body.customBodySO == null || !body.customBodySO.isSlow) && body.dragMultiplier >= 1f && !IsCrashing;
         IsSprinting = canSprint && moving && Input.GetKey(sprintKey) && !IsExhausted && Stamina > 0f;

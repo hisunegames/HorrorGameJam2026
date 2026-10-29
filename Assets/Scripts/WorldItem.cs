@@ -7,6 +7,10 @@ public class WorldItem : Interactable
     public ItemData item;
     //Uses left (weapons). -1 = full
     public int charges = -1;
+    //From the middle of the player to the item's edge
+    public float pickUpRange = 1.2f;
+
+    public override float Range => pickUpRange;
 
     protected override void OnEnable()
     {
@@ -27,7 +31,10 @@ public class WorldItem : Interactable
     void ApplySprite()
     {
         SpriteRenderer sr = GetComponent<SpriteRenderer>();
-        if(sr != null && item != null && item.worldSprite != null) sr.sprite = item.worldSprite;
+        if(sr == null) return;
+        if(item != null && item.worldSprite != null) sr.sprite = item.worldSprite;
+        //Above the furniture it sits on, with room for the interact outline (drawn one step behind) in front of it too
+        sr.sortingOrder = Mathf.Max(sr.sortingOrder, Interactable.AboveFurniture);
     }
 
     public override string Prompt(BodyScript body)
@@ -51,7 +58,10 @@ public class WorldItem : Interactable
 
     public override void Interact(BodyScript body)
     {
-        if(Inventory.Add(item, charges)) Destroy(gameObject);
+        if(!Inventory.Add(item, charges)) return;
+        //"This can be useful." / "Need this for the generator."
+        SpeechBubble.Say(body.transform, Lore.PickupLine(item), 2.5f);
+        Destroy(gameObject);
     }
 
     public static WorldItem Spawn(ItemData item, int charges, Vector2 position)

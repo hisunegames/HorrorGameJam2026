@@ -1,9 +1,10 @@
 using UnityEngine;
 using UnityEngine.AI;
 
-//Researcher F while nobody's in her: wanders her room, scared. Come at her with a weapon selected (or the monster
-//gets close) and she runs: away from you, and out through a door if one's clear. A chair parked in a doorway
-//blocks it, so you can trap her in a room and corner her. Says a line when you come near (calm or armed).
+//Researcher F while nobody's in her: wanders her room, scared. Come at her with a weapon selected and she runs:
+//away from you, and out through a door if one's clear. A chair parked in a doorway blocks it, so you can trap her in
+//a room and corner her. When the monster gets close she freezes instead (lure it to her with the radio).
+//Says a line when you come near (calm or armed).
 //Stops once she's possessed, left behind or dead
 [RequireComponent(typeof(BodyScript))]
 public class ResearcherAI : MonoBehaviour
@@ -24,23 +25,10 @@ public class ResearcherAI : MonoBehaviour
     [Header("Talking")]
     public float talkRange = 2.5f;
     public float talkCooldown = 7f;
-    [TextArea] public string[] calmLines =
-    {
-        "Who... who's in there?",
-        "Don't come any closer. Please.",
-        "You're not him. You can't be him.",
-    };
-    [TextArea] public string[] armedLines =
-    {
-        "No - no, put that down!",
-        "Stay away from me!",
-        "Please, I have a family!",
-    };
-    [TextArea] public string[] corneredLines =
-    {
-        "Please... please don't...",
-        "I'll do anything. Don't.",
-    };
+    //From Lore.cs
+    [TextArea] public string[] noWeaponLines = (string[])Lore.ResearcherNoWeapon.Clone();
+    [TextArea] public string[] weaponLines = (string[])Lore.ResearcherWeapon.Clone();
+    [TextArea] public string[] aboutToDieLines = (string[])Lore.ResearcherAboutToDie.Clone();
     [TextArea] public string[] monsterLines =
     {
         "It's here - it's HERE!",
@@ -59,6 +47,8 @@ public class ResearcherAI : MonoBehaviour
     private bool active;
 
     public bool IsFleeing { get; private set; }
+    //The monster is close: she freezes instead of running
+    public bool IsFrozen { get; private set; }
     public bool IsCornered { get; private set; }
 
     void Awake()
@@ -95,12 +85,16 @@ public class ResearcherAI : MonoBehaviour
         bool armed = player != null && !player.isHiding && Armed() && Vector2.Distance(player.transform.position, me) <= fleeRange;
         Enemy monster = NearestMonster(me);
 
-        //Who to run from: you with a weapon, or the monster
+        //Only the player makes her run (armed, or in the daughter's body). The real monster freezes her in place:
+        //she cowers where she is, which is what makes luring it to her (radio) work
         Vector2? threat = null;
-        if(monster != null) threat = monster.transform.position;
-        else if(armed) threat = player.transform.position;
+        bool daughterNear = DaughterTransfer.Active && player != null && Vector2.Distance(player.transform.position, me) <= monsterFleeRange;
+        if(daughterNear || armed) threat = player.transform.position;
+        bool wasFrozen = IsFrozen;
+        IsFrozen = monster != null && threat == null;
+        if(IsFrozen && !wasFrozen) ClearPath();
 
-        Talk(playerNear, armed, monster != null);
+        Talk(playerNear, armed, monster != null || daughterNear);
         bool wasFleeing = IsFleeing;
         IsFleeing = threat != null;
 
@@ -113,6 +107,12 @@ public class ResearcherAI : MonoBehaviour
     void FixedUpdate()
     {
         if(!active || !CanAct) return;
+        //Too scared to move
+        if(IsFrozen)
+        {
+            body.rb.linearVelocity = Vector2.zero;
+            return;
+        }
         if(!IsFleeing && cornerIndex >= corners.Length)
         {
             body.rb.linearVelocity = Vector2.zero;
@@ -146,7 +146,9 @@ public class ResearcherAI : MonoBehaviour
     {
         foreach(var enemy in FindObjectsByType<Enemy>())
         {
-            if(!enemy.IsStunned && Vector2.Distance(enemy.transform.position, me) <= monsterFleeRange) return enemy;
+            //A switched-off Enemy is the daughter the player is in (handled as the player below)
+            if(!enemy.isActiveAndEnabled || enemy.IsStunned) continue;
+            if(Vector2.Distance(enemy.transform.position, me) <= monsterFleeRange) return enemy;
         }
         return null;
     }
@@ -161,9 +163,9 @@ public class ResearcherAI : MonoBehaviour
 
         string[] lines = null;
         if(monster) lines = monsterLines;
-        else if(IsCornered && playerNear) lines = corneredLines;
-        else if(armedNow) lines = armedLines;
-        else if(playerNear) lines = calmLines;
+        else if(IsCornered && playerNear) lines = aboutToDieLines;
+        else if(armedNow) lines = weaponLines;
+        else if(playerNear) lines = noWeaponLines;
         if(lines == null || lines.Length == 0) return;
         SpeechBubble.Say(transform, lines[Random.Range(0, lines.Length)], 3f);
         talkTimer = talkCooldown;
@@ -270,7 +272,9 @@ public class ResearcherAI : MonoBehaviour
 
     bool Reachable(Vector3 point)
     {
-        return NavMesh.CalculatePath(transform.position, point, NavMesh.AllAreas, path) && path.status == NavMeshPathStatus.PathComplete;
+        //Start from the nearest NavMesh point to her feet, so standing near a wall doesn't break it
+        Vector3 from = NavMesh.SamplePosition(transform.position, out NavMeshHit start, 1f, NavMesh.AllAreas) ? start.position : transform.position;
+        return NavMesh.CalculatePath(from, point, NavMesh.AllAreas, path) && path.status == NavMeshPathStatus.PathComplete;
     }
 
     bool SetPath(Vector3 point)

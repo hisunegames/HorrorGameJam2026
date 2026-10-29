@@ -6,9 +6,6 @@ public class Locker : Interactable
 {
     public static Locker Occupied { get; private set; }
 
-    //Where you step out
-    public Vector2 exitOffset = new Vector2(0f, -0.6f);
-
     private BodyScript hidden;
 
     void Reset()
@@ -59,9 +56,8 @@ public class Locker : Interactable
         hidden = body;
         Occupied = this;
         body.isHiding = true;
+        //Stays where they stood in front of it (moving them into the locker could put them inside the wall)
         body.rb.linearVelocity = Vector2.zero;
-        body.rb.position = transform.position;
-        body.transform.position = transform.position;
         SetVisible(body, false);
     }
 
@@ -72,9 +68,7 @@ public class Locker : Interactable
         if(Occupied == this) Occupied = null;
         if(body == null) return;
         body.isHiding = false;
-        Vector3 exit = transform.position + (Vector3)exitOffset;
-        body.rb.position = exit;
-        body.transform.position = exit;
+        //Back out right where they went in
         SetVisible(body, true);
     }
 

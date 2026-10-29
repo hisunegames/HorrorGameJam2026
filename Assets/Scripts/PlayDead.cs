@@ -1,14 +1,15 @@
 using UnityEngine;
 
 //Bodies with CustomBodySO.canPlayDead can hold a key to drop flat (their collapse animation) and lie still.
-//The monster stops treating them as a target, but still kills them if it walks right into them.
+//The monster stops treating them as a target and won't grab them even if it walks right over them.
 //Drains stamina; running out gets you back up, exhausted. Put it on the GameManager next to PlayerSprint
 public class PlayDead : MonoBehaviour
 {
     public BodyManager bodyManager;
     public PlayerSprint sprint;
     public KeyCode playDeadKey = KeyCode.C;
-    public float drainPerSecond = 20f;
+    //Stamina used per second lying still: 100 stamina lasts 12.5 s, No Legs (x1.3) about 16 s
+    public float staminaDrainPerSecond = 8f;
     //Need at least this much stamina to drop
     public float minStaminaToStart = 10f;
     //Collapse animation speed when dropping on purpose (leaving a body plays it at 1x)
@@ -43,7 +44,9 @@ public class PlayDead : MonoBehaviour
             return;
         }
 
-        bool stillHasStamina = sprint == null || sprint.Drain(drainPerSecond * Time.deltaTime);
+        //Bodies built for it (No Legs) last longer lying still
+        float lasts = current.customBodySO != null ? Mathf.Max(0.1f, current.customBodySO.staminaMultiplier) : 1f;
+        bool stillHasStamina = sprint == null || sprint.Drain(staminaDrainPerSecond / lasts * Time.deltaTime);
         if(!holding || !stillHasStamina) GetUp();
     }
 

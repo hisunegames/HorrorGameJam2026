@@ -32,7 +32,14 @@ public static class ItemTools
         made += Make("Knife", "Knife", ItemKind.Weapon, Sprite(Props + "Knife.png"), i => Weapon(i, 2, 1f, false, true, 0f));
         made += Make("Saw", "Saw", ItemKind.Weapon, Sprite(Props + "NewSaw.png"), i => Weapon(i, 2, 1f, false, true, 0f));
         made += Make("Chainsaw", "Chainsaw", ItemKind.Weapon, Sprite(Props + "NewChainsaw.png"), i => Weapon(i, 2, 2f, false, true, 1.5f));
-        made += Make("Shotgun", "Shotgun", ItemKind.Weapon, Sprite(Props + "Shotgun.png"), i => Weapon(i, 1, 5f, true, false, 2.5f));
+        made += Make("Shotgun", "Shotgun", ItemKind.Weapon, Sprite(Props + "Shotgun.png"), i =>
+        {
+            Weapon(i, 1, 5f, true, false, 2.5f);
+            i.pellets = 5;
+            i.spread = 30f;
+            i.projectileSpeed = 16f;
+            i.projectileColor = new Color(1f, 0.75f, 0.3f);
+        });
         made += Make("StunGun", "Stun Gun", ItemKind.Weapon, Sprite(Props + "Stun_Gun.png"), i => Weapon(i, 2, 4f, true, false, 0.3f));
         made += Make("Adrenaline", "Adrenaline", ItemKind.Adrenaline, Sprite(Props + "Adrenaline.png"), null);
         made += Make("Toolbox", "Toolbox", ItemKind.KeyItem, Sprite(Props + "Toolbox.png"), null);
@@ -41,6 +48,8 @@ public static class ItemTools
         made += Make("ChargedBattery", "Charged Battery", ItemKind.KeyItem, Art("BatteryFull") ?? Placeholder("ChargedBattery", Battery(true)), null);
         made += Make("SpareParts", "Spare Parts", ItemKind.KeyItem, Art("SpareParts") ?? Placeholder("SpareParts", Parts()), null);
         made += Make("Finger", "Researcher's Finger", ItemKind.KeyItem, Art("Finger") ?? Placeholder("Finger", Finger()), null);
+        //Placeholder until Radio.png is in PropNFurniture (rerun this and it switches over)
+        made += Make("Radio", "Radio", ItemKind.Lure, Art("Radio") ?? Placeholder("Radio", Radio()), null);
         AssetDatabase.SaveAssets();
         Debug.Log($"Item assets: {made} new in {ItemFolder}. Edit their numbers there (range, charges, stun...)");
     }
@@ -117,7 +126,7 @@ public static class ItemTools
         {
             {"Beartrap", "BearTrap"}, {"Knife", "Knife"}, {"Saw", "Saw"}, {"NewSaw", "Saw"}, {"Chainsaw", "Chainsaw"},
             {"NewChainsaw", "Chainsaw"}, {"Shotgun", "Shotgun"}, {"Stun_Gun", "StunGun"}, {"Adrenaline", "Adrenaline"},
-            {"Toolbox", "Toolbox"},
+            {"Toolbox", "Toolbox"}, {"Radio", "Radio"},
         };
         var counts = new Dictionary<string, int>();
         foreach(var sr in Object.FindObjectsByType<SpriteRenderer>(FindObjectsInactive.Include))
@@ -352,6 +361,20 @@ public static class ItemTools
             "..kgggk",
             "l.kgkgk",
             "lk.kkk.",
+        };
+    }
+
+    static string[] Radio()
+    {
+        return new[]
+        {
+            "......l.",
+            ".....l..",
+            "kkkkkkkk",
+            "kgggkllk",
+            "kgkgkllk",
+            "kgggkyyk",
+            "kkkkkkkk",
         };
     }
 

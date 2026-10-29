@@ -45,6 +45,14 @@ public class CameraRoomConfiner : MonoBehaviour
         }
     }
 
+    //World size the camera shows (a hair bigger, so a room exactly that size doesn't wobble either)
+    Vector2 ViewSize()
+    {
+        float height = vcam != null ? vcam.Lens.OrthographicSize * 2f : 5.625f;
+        float aspect = Camera.main != null ? Camera.main.aspect : 16f / 9f;
+        return new Vector2(height * aspect, height) + Vector2.one * 0.05f;
+    }
+
     void BuildRoomBounds()
     {
         foreach(var tilemap in FindObjectsByType<Tilemap>())
@@ -63,7 +71,11 @@ public class CameraRoomConfiner : MonoBehaviour
             obj.transform.position = new Vector3(rect.center.x, rect.center.y, 0f);
             BoxCollider2D box = obj.AddComponent<BoxCollider2D>();
             box.isTrigger = true;
-            box.size = rect.size;
+            //A room smaller than the view (the exit room) can't hold the camera, so the confiner jitters. Grow its box to
+            //the view size, centred on the room: the camera then just sits still in the middle. The room rect used to
+            //tell which room you're in stays the real size
+            Vector2 view = ViewSize();
+            box.size = new Vector2(Mathf.Max(rect.size.x, view.x), Mathf.Max(rect.size.y, view.y));
 
             roomRects.Add(rect);
             roomShapes.Add(box);

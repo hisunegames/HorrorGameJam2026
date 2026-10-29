@@ -32,6 +32,10 @@ public static class GameManagerSetup
         typeof(BodyDrag),
         typeof(Interactor),
         typeof(ModalUI),
+        typeof(LoreTriggers),
+        typeof(DaughterTransfer),
+        typeof(IntroVideo),
+        typeof(NoiseIndicator),
     };
 
     [MenuItem("Tools/Jam/Create Game Manager")]

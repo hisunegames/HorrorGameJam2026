@@ -1,7 +1,7 @@
 using UnityEngine;
 
-//Hold the drag key next to a left-behind body, a corpse or a chair (DraggableProp) to pull it along behind you
-//(slower, no sprinting). Let go to drop it. Dragged bodies leave a blood trail the monster follows.
+//Press the drag key next to a left-behind body, a corpse or a chair (DraggableProp) to pull it along behind you
+//(slower, no sprinting). Press it again to drop it. Dragged bodies leave a blood trail the monster follows.
 //Put it on the GameManager
 public class BodyDrag : MonoBehaviour
 {
@@ -53,12 +53,15 @@ public class BodyDrag : MonoBehaviour
     void Update()
     {
         BodyScript body = bodyManager != null ? bodyManager.currentBody : null;
-        //Swapped, playing dead, hiding, let go, or the body stopped being draggable
-        if(IsDragging && (body != dragger || body.isPlayingDead || body.isHiding || !Input.GetKey(dragKey) || (Dragged != null && !Dragged.IsDraggable)))
+        bool pressed = Input.GetKeyDown(dragKey) && Time.timeScale > 0f && !ModalUI.IsOpen;
+        //Pressed again to drop it, or swapped / playing dead / hiding / the body stopped being draggable
+        if(IsDragging && (pressed || body != dragger || body.isPlayingDead || body.isHiding || (Dragged != null && !Dragged.IsDraggable)))
         {
             Release();
+            //That press was the drop, not a new grab
+            pressed = false;
         }
-        if(!IsDragging && body != null && !body.isPlayingDead && !body.isHiding && Time.timeScale > 0f && !ModalUI.IsOpen && Input.GetKeyDown(dragKey))
+        if(!IsDragging && pressed && body != null && !body.isPlayingDead && !body.isHiding)
         {
             Component near = NearestDraggable(body);
             if(near != null) Grab(body, near);

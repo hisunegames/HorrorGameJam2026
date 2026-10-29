@@ -43,7 +43,7 @@ public class CustomBodySO : ScriptableObject
 
     [Header("Stats")]
     public float moveSpeed = 5f;
-    [Tooltip("Size of the stamina pool (sprinting, playing dead) compared to normal")]
+    [Tooltip("How much longer this body can play dead (No Legs 1.3). Doesn't change the normal stamina bar")]
     public float staminaMultiplier = 1f;
 
     public float SpeedMultiplier => isSlow ? slowSpeedMultiplier : 1f;

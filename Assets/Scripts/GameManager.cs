@@ -42,6 +42,19 @@ public class GameManager : MonoBehaviour
         int playerLayer = LayerMask.NameToLayer("Player");
         if(bodyLayer >= 0 && playerLayer >= 0) Physics2D.IgnoreLayerCollision(bodyLayer, playerLayer, walkOverBodies);
 
+        //Systems that need no settings: added here if the scene doesn't have them yet (so a newer system works even
+        //if Tools > Jam > Create Game Manager wasn't run again). Ones with settings to fill in are still added by the tool
+        Ensure<Interactor>();
+        Ensure<ModalUI>();
+        Ensure<PlayerInventory>();
+        Ensure<BodyDrag>();
+        Ensure<PlayDead>();
+        Ensure<BodyFog>();
+        Ensure<VibrationSense>();
+        Ensure<NoiseIndicator>();
+        Ensure<LoreTriggers>();
+        Ensure<DaughterTransfer>();
+
         if(bodyManager == null) bodyManager = GetComponentInChildren<BodyManager>();
         if(sprint == null) sprint = GetComponentInChildren<PlayerSprint>();
         if(hud == null) hud = GetComponentInChildren<PlayerHUD>();
@@ -54,6 +67,13 @@ public class GameManager : MonoBehaviour
         if(playDead == null) playDead = GetComponentInChildren<PlayDead>();
         if(inventory == null) inventory = GetComponentInChildren<PlayerInventory>();
         if(bodyDrag == null) bodyDrag = GetComponentInChildren<BodyDrag>();
+    }
+
+    void Ensure<T>() where T : Component
+    {
+        if(GetComponentInChildren<T>() != null || FindAnyObjectByType<T>() != null) return;
+        gameObject.AddComponent<T>();
+        Debug.Log($"GameManager: added missing {typeof(T).Name} (run Tools > Jam > Create Game Manager to keep it in the scene)", this);
     }
 
     void OnDestroy()

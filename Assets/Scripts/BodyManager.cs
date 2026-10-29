@@ -20,6 +20,9 @@ public class BodyManager : MonoBehaviour
     public int maxActive = 3;
     public DialogueController dialogueController;
 
+    //Only the body you're in right now counts (leaving the Major takes his keys with him)
+    public bool CurrentCanUnlockDoors => currentBody != null && currentBody.customBodySO != null && currentBody.customBodySO.canUnlockDoors;
+
     void Start()
     {
         //Not assigned in the scene: use the body marked as current (the Player prefab is)
@@ -47,7 +50,8 @@ public class BodyManager : MonoBehaviour
         if (Time.timeScale == 0f) return;
         //Lying still, no swapping or talking until you get up
         if (currentBody != null && currentBody.isPlayingDead) return;
-        if (Input.GetKeyDown(KeyCode.E))
+        //In the daughter's body there's no jumping back out
+        if (Input.GetKeyDown(KeyCode.E) && !DaughterTransfer.Active)
         {
             TrySwapBody();
         }
@@ -118,6 +122,13 @@ public class BodyManager : MonoBehaviour
         return nearest;
     }
 
+
+    //Swap into a specific body from outside (DaughterTransfer)
+    public void SwapInto(BodyScript targetBody)
+    {
+        if(currentBody == null || targetBody == null || targetBody == currentBody) return;
+        DoSwapBody(currentBody, targetBody);
+    }
 
     void DoSwapBody(BodyScript currentBody, BodyScript targetBody)
     {

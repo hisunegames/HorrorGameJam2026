@@ -14,6 +14,11 @@ public abstract class Interactable : MonoBehaviour
     [TextArea] public string blockedThought;
 
     public Vector2 Point => interactPoint != null ? (Vector2)interactPoint.position : (Vector2)transform.position;
+    //Sorting order for small things on tables (items, notes): their outline is drawn one step behind them, so they
+    //need to sit a few steps above the furniture or the table hides the outline
+    public const int AboveFurniture = 5;
+    //What the Interactor checks against (pickups use their own setting)
+    public virtual float Range => range;
 
     private SpriteRenderer sprite;
 
@@ -63,10 +68,10 @@ public abstract class Interactable : MonoBehaviour
         if(interactPoint == null && sr != null && sr.sprite != null)
         {
             Bounds b = sr.bounds;
-            Gizmos.DrawWireCube(b.center, new Vector3(b.size.x + range * 2f, b.size.y + range * 2f, 0f));
+            Gizmos.DrawWireCube(b.center, new Vector3(b.size.x + Range * 2f, b.size.y + Range * 2f, 0f));
             return;
         }
-        Gizmos.DrawWireSphere(Point, range);
+        Gizmos.DrawWireSphere(Point, Range);
         Gizmos.DrawWireSphere(Point, 0.08f);
         if(interactPoint != null) Gizmos.DrawLine(transform.position, Point);
     }

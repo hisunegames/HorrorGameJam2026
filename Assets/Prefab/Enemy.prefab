@@ -132,7 +132,7 @@ MonoBehaviour:
   sightBlockers:
     serializedVersion: 2
     m_Bits: 0
-  chaseLoseDistance: 12
+  chaseLoseDistance: 16
   enemyKillRange: 0.5
   loseTargetDelay: 1.5
   reChaseCooldown: 2

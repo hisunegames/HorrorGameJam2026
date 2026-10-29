@@ -30,3 +30,7 @@ MonoBehaviour:
   boostSpeed: 1.3
   crashTime: 6
   crashSpeed: 0.6
+  pellets: 1
+  spread: 0
+  projectileSpeed: 14
+  projectileColor: {r: 0.4, g: 0.9, b: 1, a: 1}

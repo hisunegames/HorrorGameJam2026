@@ -20,3 +20,4 @@ MonoBehaviour:
   moveSpeed: 3.75
   walkNoise: 0.5
   sprintNoiseMultiplier: 1.5
+  rubberBoots: 1

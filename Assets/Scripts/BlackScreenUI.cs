@@ -19,17 +19,23 @@ public class BlackScreenUI : MonoBehaviour
     public const int CanvasSortingOrder = 32500;
 
     private CanvasGroup group;
+    private CanvasGroup textGroup;
     private Text titleText;
     private Text bodyText;
 
     void Awake()
     {
-        if(font == null)
-        {
-            font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        }
+        //The game font unless one was picked by hand
+        if(font == null || font.name == "LegacyRuntime") font = GameFont.Get();
         BuildCanvas();
-        group.alpha = 0f;
+        SetAlpha(0f);
+    }
+
+    //The black (through the camera, CRT on it) and the text (crisp overlay) fade together
+    void SetAlpha(float a)
+    {
+        group.alpha = a;
+        if(textGroup != null) textGroup.alpha = a;
     }
 
     void BuildCanvas()
@@ -64,8 +70,21 @@ public class BlackScreenUI : MonoBehaviour
         image.color = Color.black;
         Stretch(image.rectTransform, 0f, 1f);
 
-        titleText = MakeText(canvasObj.transform, "Title", titleSize, 0.5f, 0.75f);
-        bodyText = MakeText(canvasObj.transform, "Body", bodySize, 0.15f, 0.5f);
+        //Text on its own overlay canvas on top: through the CRT at 320x180 it was unreadable
+        GameObject textCanvasObj = new GameObject("BlackScreenText");
+        textCanvasObj.transform.SetParent(transform, false);
+        Canvas textCanvas = textCanvasObj.AddComponent<Canvas>();
+        textCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        textCanvas.sortingOrder = 150;
+        CanvasScaler textScaler = textCanvasObj.AddComponent<CanvasScaler>();
+        textScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        textScaler.referenceResolution = new Vector2(1280, 720);
+        textGroup = textCanvasObj.AddComponent<CanvasGroup>();
+        textGroup.blocksRaycasts = false;
+        textGroup.interactable = false;
+
+        titleText = MakeText(textCanvasObj.transform, "Title", titleSize, 0.5f, 0.75f);
+        bodyText = MakeText(textCanvasObj.transform, "Body", bodySize, 0.15f, 0.5f);
     }
 
     Text MakeText(Transform parent, string name, int size, float minY, float maxY)
@@ -129,9 +148,9 @@ public class BlackScreenUI : MonoBehaviour
         while(t < duration)
         {
             t += Time.unscaledDeltaTime;
-            group.alpha = Mathf.Lerp(start, targetAlpha, t / duration);
+            SetAlpha(Mathf.Lerp(start, targetAlpha, t / duration));
             yield return null;
         }
-        group.alpha = targetAlpha;
+        SetAlpha(targetAlpha);
     }
 }

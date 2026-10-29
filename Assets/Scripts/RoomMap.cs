@@ -23,6 +23,16 @@ public static class RoomMap
     }
 
     //Area of a room (its painted Wall tiles)
+    //Every room that has walls painted
+    public static IEnumerable<Transform> AllRooms
+    {
+        get
+        {
+            if(NeedsRebuild()) Rebuild();
+            return rooms.Keys;
+        }
+    }
+
     public static bool TryGetBounds(Transform room, out Bounds bounds)
     {
         bounds = default;

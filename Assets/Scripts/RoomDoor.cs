@@ -12,7 +12,7 @@ public class RoomDoor : MonoBehaviour
     public static event Action<BodyScript, RoomDoor, RoomDoor> OnBodyUsedDoor;
 
     public RoomDoor linkedDoor;
-    //Shortcut doors (from a room's "Shortcut" tilemap) need the unlock ability (Major) and the monster can't follow through them
+    //Shortcut doors (metal door tiles) need a body that can unlock doors (Major) and the monster can't follow through them
     public bool isShortcut = false;
     public KeyCode interactKey = KeyCode.F;
     //Points from the door into its own room
@@ -48,11 +48,14 @@ public class RoomDoor : MonoBehaviour
         if(!Input.GetKeyDown(interactKey)) return;
 
         BodyScript body = CurrentBodyAtDoor();
-        if(body == null || body.isPlayingDead) return;
+        if(body == null || body.isPlayingDead || !IsUsableBy(body)) return;
+        //Something else nearer has the key (the Interactor decides)
+        Interactor interactor = GameManager.Get<Interactor>();
+        if(interactor != null && interactor.DoorFocus != this) return;
+        //Not linked anywhere: the fake door out of the lab
         if(linkedDoor == null)
         {
-            string room = transform.parent != null ? transform.parent.name + "/" : "";
-            Debug.LogWarning($"{room}{name} isn't linked to another door", this);
+            SpeechBubble.Say(body.transform, Lore.FakeDoor, 2.5f);
             return;
         }
         if(IsLocked) return;
@@ -67,25 +70,48 @@ public class RoomDoor : MonoBehaviour
         All.Add(this);
     }
 
+    //Standing in any door's trigger (Interactor gives the door priority over lockers etc. then)
+    public static bool AnyAt(BodyScript body)
+    {
+        return NearestAt(body, out _) != null;
+    }
+
+    //The door the body is standing at, and how far its middle is from the door tile (Interactor compares this with
+    //lockers, boxes etc. so the nearest thing gets the key)
+    public static RoomDoor NearestAt(BodyScript body, out float distance)
+    {
+        RoomDoor best = null;
+        distance = float.MaxValue;
+        if(body == null) return null;
+        Collider2D col = body.GetComponent<Collider2D>();
+        Vector2 from = col != null && col.enabled ? (Vector2)col.bounds.center : (Vector2)body.transform.position;
+        foreach(var door in All)
+        {
+            if(door == null || !door.isActiveAndEnabled || !door.IsUsableBy(body)) continue;
+            float d = Vector2.Distance(from, door.transform.position);
+            if(d < distance)
+            {
+                distance = d;
+                best = door;
+            }
+        }
+        return best;
+    }
+
     //Standing at it (the prompt shows "Locked" instead of "Enter" if IsLocked)
     public bool IsUsableBy(BodyScript body)
     {
-        return linkedDoor != null && body != null && CurrentBodyAtDoor() == body;
+        return body != null && CurrentBodyAtDoor() == body;
     }
 
-    //Shortcut and the player hasn't got the unlock ability. Same check as LockedDoor (any of the kept abilities)
+    //Shortcut and the body you're in can't unlock doors (same check as LockedDoor)
     public bool IsLocked
     {
         get
         {
             if(!isShortcut) return false;
             BodyManager bodyManager = GameManager.Get<BodyManager>();
-            if(bodyManager == null) return true;
-            foreach(var ability in bodyManager.activeAbilities)
-            {
-                if(ability != null && ability.canUnlockDoors) return false;
-            }
-            return true;
+            return bodyManager == null || !bodyManager.CurrentCanUnlockDoors;
         }
     }
 

@@ -1,10 +1,9 @@
 using UnityEngine;
 
-//The way out (Exit room). Locked until the generator runs, then [F] to escape (ending screen, R restarts)
+//The way out (Exit room). Locked until the generator runs, then [F] to run for it: the "defied death" ending,
+//or the "it never worked" one if all six story papers were read (Lore.cs)
 public class ExitDoor : Interactable
 {
-    public string endTitle = "ESCAPED";
-    [TextArea] public string endText = "You made it out. Something behind you is still crying.\n\nPress R to play again";
     //Optional: open door
     public Sprite openSprite;
 
@@ -37,17 +36,21 @@ public class ExitDoor : Interactable
 
     public override bool CanInteract(BodyScript body)
     {
-        return Generator.IsFixed;
+        //In her body you won't let her out
+        return Generator.IsFixed && !DaughterTransfer.Active;
     }
 
     protected override string DefaultThought(BodyScript body)
     {
-        return "No power to the door. The generator has to be running first.";
+        return DaughterTransfer.Active ? Lore.ExitAsDaughter : "No power to the door. The generator has to be running first.";
     }
 
     public override void Interact(BodyScript body)
     {
+        //Defying death: running out. Read all six papers and the truth comes out instead
         GameOverScreen end = GameManager.Get<GameOverScreen>();
-        if(end != null) end.ShowEnd(endTitle, endText);
+        if(end == null) return;
+        if(NoteObject.ReadAllStoryNotes) end.ShowEnding("IT NEVER WORKED", Lore.EndingNeverWorked);
+        else end.ShowEnding("DEFIED DEATH", Lore.EndingDefyDeath);
     }
 }

@@ -49,6 +49,8 @@ Shader "Jam/CRT"
             float _FlickerStrength;
             float _Vignette;
             float _Brightness;
+            //Set from code (Shader.SetGlobalFloat), not the material: 0 = normal colour, 1 = black and white (no-eyes body)
+            float _JamDesaturate;
 
             float2 CurveUV(float2 uv)
             {
@@ -105,6 +107,8 @@ Shader "Jam/CRT"
                 if (_ColorSteps >= 2.0)
                     col = floor(col * _ColorSteps + 0.5) / _ColorSteps;
 
+                //Before the scanlines/mask so the CRT tint still shows through
+                col = lerp(col, dot(col, half3(0.299, 0.587, 0.114)).xxx, saturate(_JamDesaturate));
                 col *= _Brightness;
 
                 // Fat scanlines: bright in the middle of each virtual row, dark gap between rows

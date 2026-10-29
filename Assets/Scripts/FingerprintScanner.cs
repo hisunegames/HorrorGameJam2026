@@ -9,6 +9,8 @@ public class FingerprintScanner : Interactable
     //Her body this close works too
     public float bodyRange = 1.5f;
     [TextArea] public string acceptedLine = "*click* The panel slides open. A battery, drained.";
+    //How far above the box its line shows
+    public float lineHeight = 0.5f;
     //Optional: opened box
     public Sprite openSprite;
 
@@ -46,14 +48,14 @@ public class FingerprintScanner : Interactable
 
     protected override string DefaultThought(BodyScript body)
     {
-        return "A fingerprint lock. My hands won't open it... but hers would.";
+        return Lore.ScannerLocked[Random.Range(0, Lore.ScannerLocked.Length)];
     }
 
     public override void Interact(BodyScript body)
     {
         used = true;
         if(openSprite != null) GetComponent<SpriteRenderer>().sprite = openSprite;
-        SpeechBubble.Say(transform, acceptedLine, 3f);
+        SpeechBubble.Say(transform, acceptedLine, 3f, lineHeight);
         Inventory.Give(emptyBattery, transform.position);
     }
 }

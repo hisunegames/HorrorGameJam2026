@@ -2736,6 +2736,7 @@ MonoBehaviour:
   range: 0.8
   interactPoint: {fileID: 0}
   blockedThought: 
+  lore: 0
   title: Note
   body: 
   image: {fileID: 0}
@@ -3800,7 +3801,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: -100280383
   m_SortingLayer: 2
-  m_SortingOrder: 0
+  m_SortingOrder: 5
   m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: a56af6314227e5a4b95b0b0c2a3f2a3e, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -3846,6 +3847,7 @@ MonoBehaviour:
   blockedThought: 
   item: {fileID: 11400000, guid: b5a1c32c0c7bcf040b78512f76258747, type: 2}
   charges: -1
+  pickUpRange: 1.2
 --- !u!1 &147181513 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 3007149261606511907, guid: 77e47f7f79436684a854ab9b591639fc, type: 3}
@@ -6083,7 +6085,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: -100280383
   m_SortingLayer: 2
-  m_SortingOrder: 0
+  m_SortingOrder: 5
   m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: 8f9cb11ff0bc59c4f896268f2bc70274, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -6129,6 +6131,7 @@ MonoBehaviour:
   blockedThought: 
   item: {fileID: 11400000, guid: ff2e26d91e8db344e8e2ba16410bf68d, type: 2}
   charges: -1
+  pickUpRange: 1.2
 --- !u!1 &275761732
 GameObject:
   m_ObjectHideFlags: 0
@@ -8549,7 +8552,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: -2109013863
   m_SortingLayer: 3
-  m_SortingOrder: 0
+  m_SortingOrder: 5
   m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: 827e0f8033a7e864797539e971ce58cc, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -8595,6 +8598,7 @@ MonoBehaviour:
   blockedThought: 
   item: {fileID: 11400000, guid: 3e373c694bd20ff498af2115d6cc2516, type: 2}
   charges: -1
+  pickUpRange: 1.2
 --- !u!1 &350191758
 GameObject:
   m_ObjectHideFlags: 0
@@ -15299,12 +15303,22 @@ MonoBehaviour:
   chargedBattery: {fileID: 11400000, guid: 2fa091fb9f6f3fe4eb65dd657416b3a9, type: 2}
   flasks: []
   flaskSearchRadius: 2
-  colorNames:
-  - Red
-  - Cyan
-  - Green
-  - Orange
-  correctPair: 0100000003000000
+  correctLabels:
+  - CuSO4
+  - ZnSO4
+  alwaysDecoys:
+  - H2SO4
+  decoyLabels:
+  - NaCl
+  - H2O
+  - C2H5OH
+  - H2O2
+  - KNO3
+  - C6H12O6
+  acidLine: It smokes and eats at the casing. Acid alone won't charge it - it needs
+    the two metals.
+  labelShowDistance: 1
+  labelFontSize: 16
   pickedLift: 0.125
   pickedTint: {r: 1, g: 0.95, b: 0.6, a: 1}
   wrongLine: The mixture fizzles and goes black.
@@ -15600,7 +15614,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &587749056
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -20008,11 +20022,6 @@ MonoBehaviour:
   range: 1.2
   interactPoint: {fileID: 0}
   blockedThought: 
-  endTitle: ESCAPED
-  endText: 'You made it out. But...something followed you
-
-
-'
   openSprite: {fileID: 0}
 --- !u!1 &778897620 stripped
 GameObject:
@@ -30245,6 +30254,7 @@ MonoBehaviour:
   blockedThought: 
   item: {fileID: 11400000, guid: e1f1448e7ca77ff4a85b65d25a136da0, type: 2}
   charges: -1
+  pickUpRange: 1.2
 --- !u!212 &1065794072
 SpriteRenderer:
   serializedVersion: 3
@@ -30292,7 +30302,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: -100280383
   m_SortingLayer: 2
-  m_SortingOrder: 0
+  m_SortingOrder: 5
   m_MaskInteraction: 0
   m_Sprite: {fileID: -8135096131531685454, guid: 332f392729e21bb4c94c96e81c81e030, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -34654,7 +34664,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: -100280383
   m_SortingLayer: 2
-  m_SortingOrder: 0
+  m_SortingOrder: 5
   m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: 7983cc849d0f6a94f9cf946de261d697, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -34700,6 +34710,7 @@ MonoBehaviour:
   blockedThought: 
   item: {fileID: 11400000, guid: 029cb5ef118e39d4780eaac14e9fc016, type: 2}
   charges: -1
+  pickUpRange: 1.2
 --- !u!1 &1228799491
 GameObject:
   m_ObjectHideFlags: 0
@@ -36190,7 +36201,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: -100280383
   m_SortingLayer: 2
-  m_SortingOrder: 0
+  m_SortingOrder: 5
   m_MaskInteraction: 0
   m_Sprite: {fileID: -8135096131531685454, guid: 332f392729e21bb4c94c96e81c81e030, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -36236,6 +36247,7 @@ MonoBehaviour:
   blockedThought: 
   item: {fileID: 11400000, guid: e1f1448e7ca77ff4a85b65d25a136da0, type: 2}
   charges: -1
+  pickUpRange: 1.2
 --- !u!1 &1285217211
 GameObject:
   m_ObjectHideFlags: 0
@@ -40770,6 +40782,7 @@ MonoBehaviour:
   finger: {fileID: 11400000, guid: eedfa3ca0e22b354b954a120badd7735, type: 2}
   bodyRange: 1.5
   acceptedLine: '*click* The panel slides open. A battery, drained.'
+  lineHeight: 0.5
   openSprite: {fileID: 0}
   used: 0
 --- !u!1 &1452626618
@@ -44252,7 +44265,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: -100280383
   m_SortingLayer: 2
-  m_SortingOrder: 0
+  m_SortingOrder: 5
   m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: 8f9cb11ff0bc59c4f896268f2bc70274, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -44298,6 +44311,7 @@ MonoBehaviour:
   blockedThought: 
   item: {fileID: 11400000, guid: ff2e26d91e8db344e8e2ba16410bf68d, type: 2}
   charges: -1
+  pickUpRange: 1.2
 --- !u!1001 &1612230680
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -45622,7 +45636,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: -100280383
   m_SortingLayer: 2
-  m_SortingOrder: 0
+  m_SortingOrder: 5
   m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: 7bb1993e671a0284fbe7f986710488f0, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -45668,6 +45682,7 @@ MonoBehaviour:
   blockedThought: 
   item: {fileID: 11400000, guid: 0cc14826bcb49b241a529bcf7f7a721e, type: 2}
   charges: -1
+  pickUpRange: 1.2
 --- !u!1 &1621041369
 GameObject:
   m_ObjectHideFlags: 0
@@ -48404,7 +48419,7 @@ Camera:
   far clip plane: 1000
   field of view: 34
   orthographic: 1
-  orthographic size: 3
+  orthographic size: 2.7142859
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -49615,6 +49630,7 @@ MonoBehaviour:
   range: 0.8
   interactPoint: {fileID: 0}
   blockedThought: 
+  lore: 0
   title: Note
   body: 
   image: {fileID: 0}
@@ -53160,7 +53176,9 @@ MonoBehaviour:
   font: {fileID: 12800000, guid: e3265ab4bf004d28a9537516768c1c75, type: 3}
   promptSize: 32
   textColor: {r: 0.9, g: 0.9, b: 0.85, a: 1}
+  promptAbovePlayer: 0
   promptHeight: 1.1
+  promptCornerOffset: {x: -40, y: 40}
   renderThroughCamera: 0
   barSize: {x: 240, y: 14}
   barColor: {r: 0.85, g: 0.85, b: 0.8, a: 1}
@@ -53168,10 +53186,18 @@ MonoBehaviour:
   boostedColor: {r: 0.95, g: 0.8, b: 0.2, a: 1}
   crashColor: {r: 0.4, g: 0.4, b: 0.45, a: 1}
   hideWhenFull: 1
+  showNoiseMeter: 1
+  quietColor: {r: 0.5, g: 0.8, b: 0.5, a: 1}
+  loudColor: {r: 0.9, g: 0.2, b: 0.15, a: 1}
   playDeadHintRange: 8
   vignetteColor: {r: 0, g: 0, b: 0, a: 0.85}
   vignetteFadeSpeed: 3
   vignettePulse: 0.15
+  wheelPosition: {x: 0, y: 80}
+  wheelSpacing: 130
+  sideScale: 0.65
+  sideAlpha: 0.45
+  wheelSlideTime: 0.15
 --- !u!114 &1942048002
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -53209,6 +53235,12 @@ MonoBehaviour:
 
 
     Press R to try again'
+  defiedDeathVideo: 
+  karmaVideo: 
+  neverWorkedVideo: 
+  trueEndingVideo: 
+  videoLoadTimeout: 10
+  videoReplacesText: 0
 --- !u!114 &1942048004
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -53308,6 +53340,7 @@ MonoBehaviour:
   pixelsPerUnit: 16
   coverSize: 32
   fadeTime: 0.6
+  desaturate: 1
   fogSortingLayer: 
   fogSortingOrder: 32000
   material: {fileID: 0}
@@ -53387,7 +53420,7 @@ MonoBehaviour:
   bodyManager: {fileID: 0}
   sprint: {fileID: 0}
   playDeadKey: 99
-  drainPerSecond: 20
+  staminaDrainPerSecond: 8
   minStaminaToStart: 10
   dropAnimationSpeed: 3
 --- !u!114 &1942048013
@@ -53409,13 +53442,16 @@ MonoBehaviour:
   rippleLifetime: 1
   rippleSize: 2.5
   fullStrengthRange: 6
-  maxRange: 0
-  showEdgeMarker: 1
-  markerColor: {r: 0.85, g: 0.1, b: 0.1, a: 1}
+  amalgamColor: {r: 1, g: 0.15, b: 0.12, a: 1}
+  smallMonsterColor: {r: 1, g: 0.7, b: 0.15, a: 1}
+  markerScale: 2
   markerNearDistance: 6
   markerFarDistance: 25
   markerMinAlpha: 0.1
   edgeInset: 0.4
+  amalgamMarkerHeight: 2.2
+  smallMarkerHeight: 1.1
+  distanceFontSize: 22
   sortingOrder: 32100
 --- !u!114 &1942048014
 MonoBehaviour:
@@ -53460,6 +53496,7 @@ MonoBehaviour:
   dropBlockers:
     serializedVersion: 2
     m_Bits: 4294967295
+  handOffset: {x: 0.22, y: 0.3}
 --- !u!114 &1942048016
 MonoBehaviour:
   m_ObjectHideFlags: 0

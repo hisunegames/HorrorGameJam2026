@@ -28,11 +28,12 @@ public class ModalUI : MonoBehaviour
     private Text countdownText;
     private bool alarmOn;
     private float pausedTimeScale = 1f;
+    private bool pausedByMe;
 
     void Awake()
     {
         Instance = this;
-        if(font == null) font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        if(font == null || font.name == "LegacyRuntime") font = GameFont.Get();
         Build();
     }
 
@@ -51,12 +52,14 @@ public class ModalUI : MonoBehaviour
         }
     }
 
-    public void Open(Object owner, string title, string body, Sprite image = null, string footer = "[F] Close")
+    //pause: false keeps the game running behind it (notes: the monster doesn't wait while you read)
+    public void Open(Object owner, string title, string body, Sprite image = null, string footer = "[F] Close", bool pause = true)
     {
-        if(Owner == null)
+        if(Owner == null && pause)
         {
             pausedTimeScale = Time.timeScale;
             Time.timeScale = 0f;
+            pausedByMe = true;
         }
         Owner = owner;
         OpenedFrame = Time.frameCount;
@@ -83,7 +86,8 @@ public class ModalUI : MonoBehaviour
         Owner = null;
         ClosedFrame = Time.frameCount;
         panel.SetActive(false);
-        Time.timeScale = pausedTimeScale > 0f ? pausedTimeScale : 1f;
+        if(pausedByMe) Time.timeScale = pausedTimeScale > 0f ? pausedTimeScale : 1f;
+        pausedByMe = false;
     }
 
     //Row of pictures to pick from (flasks). Cursor gets a white frame, picked ones a yellow one. Null hides the row

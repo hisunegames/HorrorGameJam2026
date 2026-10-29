@@ -12,11 +12,13 @@ public class SpeechBubble : MonoBehaviour
     private Text text;
     private float timer;
 
-    public static void Say(Transform speaker, string line, float seconds = 3f)
+    //height: world units above the speaker (default 1.2, about a head above a person). Lower for things on walls
+    public static void Say(Transform speaker, string line, float seconds = 3f, float height = -1f)
     {
         if(speaker == null || string.IsNullOrEmpty(line)) return;
         SpeechBubble bubble = speaker.GetComponent<SpeechBubble>();
         if(bubble == null) bubble = speaker.gameObject.AddComponent<SpeechBubble>();
+        if(height >= 0f) bubble.height = height;
         bubble.Show(line, seconds);
     }
 
@@ -72,7 +74,7 @@ public class SpeechBubble : MonoBehaviour
         GameObject obj = new GameObject(name + " speech");
         obj.transform.SetParent(canvas.transform, false);
         text = obj.AddComponent<Text>();
-        text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        text.font = GameFont.Get();
         text.fontSize = 26;
         text.fontStyle = FontStyle.Italic;
         text.color = color;

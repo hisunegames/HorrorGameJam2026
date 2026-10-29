@@ -42,13 +42,97 @@ public class PlayerInventory : MonoBehaviour
     public event Action OnChanged;
 
     public IReadOnlyList<ItemStack> Items => items;
+    //Wheel slot: 0 = empty hand, 1..N = Items[0..N-1]
     public int Selected { get; private set; }
-    public ItemStack SelectedStack => items.Count > 0 ? items[Mathf.Clamp(Selected, 0, items.Count - 1)] : null;
+    public int SlotCount => items.Count + 1;
+    public ItemStack SelectedStack => SlotAt(Selected);
+    //null = the empty hand slot
+    public ItemStack SlotAt(int slot) => slot > 0 && slot <= items.Count ? items[slot - 1] : null;
     public ItemData SelectedItem => SelectedStack != null ? SelectedStack.item : null;
     public bool IsFull => slotLimit > 0 && items.Count >= slotLimit;
     public Vector2 Facing { get; private set; } = Vector2.down;
 
     private readonly List<ItemStack> items = new List<ItemStack>();
+    private SpriteRenderer held;
+
+    [Header("Held item")]
+    //Where the selected item shows on the player, from their feet (x flips with facing)
+    public Vector2 handOffset = new Vector2(0.22f, 0.3f);
+
+    //The selected weapon in the player's right hand (other items aren't shown). Four directions like the body:
+    //facing down it's on screen-left in front of the body, facing up on screen-right behind it, facing right out in
+    //front behind the body, facing left mirrored and behind (the right hand is the far one)
+    //End of the barrel of the gun in your hand, and the way it points (the four held directions). Falls back to the
+    //middle of the body if the weapon isn't showing
+    public Vector2 Muzzle(BodyScript body, out Vector2 direction)
+    {
+        Vector2 f = Facing.sqrMagnitude > 0.001f ? Facing : Vector2.down;
+        direction = Mathf.Abs(f.x) >= Mathf.Abs(f.y) ? new Vector2(Mathf.Sign(f.x), 0f) : new Vector2(0f, Mathf.Sign(f.y));
+        if(held != null && held.enabled && held.sprite != null)
+        {
+            //The art points right from its pivot; mirrored when facing left. TransformPoint adds the turn up / down
+            Bounds b = held.sprite.bounds;
+            float tip = held.flipX ? -b.max.x : b.max.x;
+            return held.transform.TransformPoint(new Vector3(tip, b.center.y, 0f));
+        }
+        Collider2D col = body.GetComponent<Collider2D>();
+        return col != null ? (Vector2)col.bounds.center : (Vector2)body.transform.position;
+    }
+
+    void UpdateHeld(BodyScript body)
+    {
+        if(held == null)
+        {
+            held = new GameObject("HeldItem").AddComponent<SpriteRenderer>();
+        }
+        if(held.transform.parent != body.transform) held.transform.SetParent(body.transform, false);
+        ItemData item = SelectedItem;
+        bool show = item != null && item.kind == ItemKind.Weapon && item.worldSprite != null && !body.isHiding && !body.isPlayingDead;
+        held.enabled = show;
+        if(!show) return;
+        held.sprite = item.worldSprite;
+
+        Vector2 f = Facing.sqrMagnitude > 0.001f ? Facing : Vector2.down;
+        bool horizontal = Mathf.Abs(f.x) >= Mathf.Abs(f.y);
+        bool inFront = false;
+        float angle;
+        Vector2 pos;
+        //Item art points right
+        if(horizontal && f.x > 0f)
+        {
+            held.flipX = false;
+            angle = 0f;
+            pos = new Vector2(handOffset.x, handOffset.y);
+        }
+        else if(horizontal)
+        {
+            held.flipX = true;
+            angle = 0f;
+            pos = new Vector2(-handOffset.x, handOffset.y);
+        }
+        else if(f.y < 0f)
+        {
+            //Facing the camera: their right hand is on the screen's left
+            held.flipX = false;
+            angle = -90f;
+            pos = new Vector2(-handOffset.x, handOffset.y - 0.1f);
+            inFront = true;
+        }
+        else
+        {
+            held.flipX = false;
+            angle = 90f;
+            pos = new Vector2(handOffset.x, handOffset.y + 0.05f);
+        }
+        held.transform.localRotation = Quaternion.Euler(0f, 0f, angle);
+        held.transform.localPosition = pos;
+        SpriteRenderer bodySprite = body.GetComponent<SpriteRenderer>();
+        if(bodySprite != null)
+        {
+            held.sortingLayerID = bodySprite.sortingLayerID;
+            held.sortingOrder = bodySprite.sortingOrder + (inFront ? 1 : -1);
+        }
+    }
 
     void Awake()
     {
@@ -71,15 +155,16 @@ public class PlayerInventory : MonoBehaviour
         if(body == null || Time.timeScale == 0f || ModalUI.IsOpen) return;
         Vector2 v = body.rb.linearVelocity;
         if(v.sqrMagnitude > 0.01f) Facing = v.normalized;
+        UpdateHeld(body);
         if(body.isPlayingDead || body.isHiding) return;
 
         //Arrow keys belong to the flask table while it's in use
-        if(items.Count > 1 && ChemicalChargingStation.Active == null)
+        if(items.Count > 0 && ChemicalChargingStation.Active == null)
         {
             int step = (Input.GetKeyDown(nextKey) ? 1 : 0) - (Input.GetKeyDown(previousKey) ? 1 : 0);
             if(step != 0)
             {
-                Selected = (Selected + step + items.Count) % items.Count;
+                Selected = (Selected + step + SlotCount) % SlotCount;
                 OnChanged?.Invoke();
             }
         }
@@ -108,10 +193,15 @@ public class PlayerInventory : MonoBehaviour
         return true;
     }
 
-    //Into the inventory, or at your feet if it's full
+    //Objective rewards (battery, parts, wire, finger): dropped on the floor next to the player so they have to pick
+    //them up, on a spot they can actually reach (falls back to near dropAt if there's no player)
     public void Give(ItemData item, Vector2 dropAt, int charges = -1)
     {
-        if(!Add(item, charges)) WorldItem.Spawn(item, charges, dropAt);
+        if(item == null) return;
+        BodyScript body = bodyManager != null ? bodyManager.currentBody : null;
+        Vector2 origin = body != null ? (Vector2)body.transform.position : dropAt;
+        float angle = UnityEngine.Random.Range(0f, 360f);
+        WorldItem.Spawn(item, charges, FindDropSpot(origin, ref angle));
     }
 
     //Left-behind body a trap would be attached to
@@ -148,10 +238,14 @@ public class PlayerInventory : MonoBehaviour
                 PlayerSprint sprint = GameManager.Get<PlayerSprint>();
                 if(sprint == null) return;
                 sprint.ApplyAdrenaline(item);
-                RemoveAt(Selected);
+                RemoveSelected();
                 return;
             case ItemKind.Weapon:
                 if(UseWeapon(body, stack)) SpendCharge(stack);
+                return;
+            case ItemKind.Lure:
+                RadioLure.Place(item, body.transform.position);
+                RemoveSelected();
                 return;
         }
         if(item.IsTrap)
@@ -160,7 +254,7 @@ public class PlayerInventory : MonoBehaviour
             BodyScript bait = NearestBait(body);
             Vector2 pos = bait != null ? (Vector2)bait.transform.position : (Vector2)body.transform.position;
             ArmedTrap.Place(item, pos, bait != null ? bait.transform : null);
-            RemoveAt(Selected);
+            RemoveSelected();
         }
     }
 
@@ -213,13 +307,25 @@ public class PlayerInventory : MonoBehaviour
     bool UseWeapon(BodyScript body, ItemStack stack)
     {
         ItemData weapon = stack.item;
+        //Guns always fire (and can miss): a projectile from the middle of the body the way you're facing
+        if(weapon.ranged)
+        {
+            if(weapon.useNoise > 0f) Noise.Make(body.transform.position, weapon.useNoise);
+            Vector2 from = Muzzle(body, out Vector2 dir);
+            Projectile.Fire(weapon, from, dir);
+            return true;
+        }
         if(WeaponTarget(body, weapon, out Component target) == null) return false;
         if(weapon.useNoise > 0f) Noise.Make(body.transform.position, weapon.useNoise);
         if(target is Enemy enemy) enemy.Stun(weapon.weaponStun);
         else if(target is SmallMonster small) small.Kill();
         else if(target is BodyScript victim)
         {
-            if(!victim.isConsumed) victim.Consume();
+            if(!victim.isConsumed)
+            {
+                victim.Consume();
+                SpeechBubble.Say(body.transform, Lore.ResearcherKilled, 2.5f);
+            }
             else
             {
                 victim.fingerTaken = true;
@@ -236,12 +342,19 @@ public class PlayerInventory : MonoBehaviour
         else OnChanged?.Invoke();
     }
 
+    //Index into Items (not a wheel slot)
     void RemoveAt(int index)
     {
         if(index < 0 || index >= items.Count) return;
         items.RemoveAt(index);
-        if(Selected >= items.Count) Selected = Mathf.Max(0, items.Count - 1);
+        if(Selected > items.Count) Selected = items.Count;
         OnChanged?.Invoke();
+    }
+
+    //The item the wheel is on, used up
+    void RemoveSelected()
+    {
+        if(Selected > 0) RemoveAt(Selected - 1);
     }
 
     void HandleSwap(BodyScript oldBody, BodyScript newBody, int swapCount)

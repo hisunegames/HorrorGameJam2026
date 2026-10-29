@@ -1,7 +1,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-//Puts a random body type into every BodyCapsule in the scene when the game starts. Put it on the GameManager
+//Fills every BodyCapsule in the scene when the game starts: at least one of each body type (in random capsules),
+//the rest random picks from the pool. Put it on the GameManager
 public class CapsuleSpawner : MonoBehaviour
 {
     //Body prefabs to pick from (not the Player). Tools > Jam > Create Game Manager fills this in
@@ -15,6 +16,7 @@ public class CapsuleSpawner : MonoBehaviour
 
     private readonly List<BodyScript> deck = new List<BodyScript>();
 
+    //One of every body type first (in random capsules), then the leftover capsules get random picks from the pool
     void Start()
     {
         bodyTypes.RemoveAll(b => b == null);
@@ -35,17 +37,51 @@ public class CapsuleSpawner : MonoBehaviour
             return byX != 0 ? byX : a.transform.position.y.CompareTo(b.transform.position.y);
         });
 
+        //Capsules with a forced body get it; they count towards "one of each"
+        var open = new List<BodyCapsule>();
+        var placed = new HashSet<BodyScript>();
         foreach(var capsule in capsules)
         {
             if(capsule.forcedBody != null)
             {
                 capsule.Fill(capsule.forcedBody);
+                placed.Add(capsule.forcedBody);
+            }
+            else open.Add(capsule);
+        }
+        Shuffle(open);
+
+        //Every type that isn't in a capsule yet gets one (the list may name a type twice to make it more common)
+        var missing = new List<BodyScript>();
+        foreach(var type in bodyTypes) if(!placed.Contains(type) && !missing.Contains(type)) missing.Add(type);
+        Shuffle(missing);
+        int next = 0;
+        foreach(var type in missing)
+        {
+            if(next >= open.Count)
+            {
+                Debug.LogWarning($"Not enough capsules for one of every body type: {type.name} isn't in the level", this);
                 continue;
             }
+            open[next++].Fill(type);
+        }
+
+        //The rest: any from the pool, or left empty
+        for(; next < open.Count; next++)
+        {
             if(Random.value < emptyChance) continue;
-            capsule.Fill(Draw());
+            open[next].Fill(Draw());
         }
         if(seed >= 0) Random.state = oldState;
+    }
+
+    static void Shuffle<T>(List<T> list)
+    {
+        for(int i = list.Count - 1; i > 0; i--)
+        {
+            int j = Random.Range(0, i + 1);
+            (list[i], list[j]) = (list[j], list[i]);
+        }
     }
 
     BodyScript Draw()
@@ -54,12 +90,7 @@ public class CapsuleSpawner : MonoBehaviour
         if(deck.Count == 0)
         {
             deck.AddRange(bodyTypes);
-            //Shuffle
-            for(int i = deck.Count - 1; i > 0; i--)
-            {
-                int j = Random.Range(0, i + 1);
-                (deck[i], deck[j]) = (deck[j], deck[i]);
-            }
+            Shuffle(deck);
         }
         BodyScript next = deck[deck.Count - 1];
         deck.RemoveAt(deck.Count - 1);

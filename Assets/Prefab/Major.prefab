@@ -15,8 +15,8 @@ GameObject:
   - component: {fileID: 3084518160078094590}
   - component: {fileID: 4409340471128853772}
   - component: {fileID: 7339277023266640351}
-  - component: {fileID: 1972641241786800787}
   - component: {fileID: 1273393401213035331}
+  - component: {fileID: 7293529165592404371}
   m_Layer: 6
   m_Name: Major
   m_TagString: Player
@@ -111,9 +111,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b585940392e344b9b939ac7949f8ea69, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DialogueData
-  dialogueLines:
-  - Hello! I am a mechanic. I can fix your stuff.
-  - Feel free to call me when you have problems.
+  dialogueLines: []
 --- !u!50 &4757900227200805170
 Rigidbody2D:
   serializedVersion: 5
@@ -194,8 +192,30 @@ SortingGroup:
   m_SortingOrder: 0
   m_SortAtRoot: 0
   m_Sort3DAs2D: 0
---- !u!61 &1972641241786800787
-BoxCollider2D:
+--- !u!95 &1273393401213035331
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1193959345115943865}
+  m_Enabled: 0
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: ebbcbdf90f6dd844b8f8e3c87dd2ab11, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
+--- !u!70 &7293529165592404371
+CapsuleCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -229,36 +249,5 @@ BoxCollider2D:
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0.375}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0}
-    oldSize: {x: 0.4375, y: 0.75}
-    newSize: {x: 1, y: 1}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  m_Size: {x: 0.55, y: 0.85}
-  m_EdgeRadius: 0
---- !u!95 &1273393401213035331
-Animator:
-  serializedVersion: 7
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1193959345115943865}
-  m_Enabled: 0
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: ebbcbdf90f6dd844b8f8e3c87dd2ab11, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_AnimatePhysics: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0
+  m_Size: {x: 0.4375, y: 0.75}
+  m_Direction: 0

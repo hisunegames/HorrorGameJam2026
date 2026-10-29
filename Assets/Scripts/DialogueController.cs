@@ -10,6 +10,13 @@ public class DialogueController : MonoBehaviour
     private string[] dialogueLines;
     private bool isTyping = false;
 
+    void Awake()
+    {
+        //The game's font (VCR OSD Mono) in the dialogue box too
+        TMP_FontAsset font = GameFont.GetTMP();
+        if(font != null && dialogueText != null) dialogueText.font = font;
+    }
+
     // void Start()
     // {
     //     StartDialogue(new string[] { "Welcome to the game!", "This is a sample dialogue.", "Press Space to continue." });

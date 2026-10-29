@@ -14,9 +14,9 @@ GameObject:
   - component: {fileID: 8220164048687647453}
   - component: {fileID: -955460078811654081}
   - component: {fileID: 2718613244286456497}
-  - component: {fileID: 8559971752328173790}
   - component: {fileID: 7475115598262883204}
   - component: {fileID: 3474675998776623261}
+  - component: {fileID: 109320098430274891}
   m_Layer: 6
   m_Name: ResearcherF
   m_TagString: Player
@@ -179,52 +179,6 @@ SortingGroup:
   m_SortingOrder: 0
   m_SortAtRoot: 0
   m_Sort3DAs2D: 0
---- !u!61 &8559971752328173790
-BoxCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8649384691106239954}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ForceSendLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ForceReceiveLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ContactCaptureLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_CallbackLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_CompositeOperation: 0
-  m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0.375}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0}
-    oldSize: {x: 0.5625, y: 0.75}
-    newSize: {x: 1, y: 1}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  m_Size: {x: 0.55, y: 0.85}
-  m_EdgeRadius: 0
 --- !u!95 &7475115598262883204
 Animator:
   serializedVersion: 7
@@ -268,16 +222,52 @@ MonoBehaviour:
   wanderPause: {x: 1.5, y: 4}
   talkRange: 2.5
   talkCooldown: 7
-  calmLines:
-  - Who... who's in there?
-  - Don't come any closer. Please.
-  - You're not him. You can't be him.
-  armedLines:
-  - No - no, put that down!
-  - Stay away from me!
-  - Please, I have a family!
-  corneredLines:
-  - Please... please don't...
-  - I'll do anything. Don't.
+  noWeaponLines:
+  - Eek- Doctor, p-please come hide here. The lab subject 1710 broke the cage and
+    came out.
+  - It's dangerous out there doc. Come here and don't make a noise.
+  weaponLines:
+  - Ahhhh- D don't kill me!!!
+  - STAY AWAY FROM ME!!
+  aboutToDieLines:
+  - What did I do wrong doc...
+  - Promise me it will be painless.
   monsterLines:
   - It's here - it's HERE!
+--- !u!70 &109320098430274891
+CapsuleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8649384691106239954}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0.375}
+  m_Size: {x: 0.4375, y: 0.75}
+  m_Direction: 0

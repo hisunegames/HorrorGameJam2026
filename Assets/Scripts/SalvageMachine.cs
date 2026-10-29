@@ -10,7 +10,8 @@ public class SalvageMachine : Interactable
     public float salvageNoise = 0.6f;
 
     [Header("Note that falls out")]
-    public string noteTitle = "Maintenance log";
+    [Tooltip("Leave Note Body empty for Note 5 from Lore.cs (the child's letter). Put the drawing in Note Image")]
+    public string noteTitle = "Dear Santa";
     [TextArea(4, 12)] public string noteBody;
     public Sprite noteImage;
     //How the note looks on the floor (Notes sprite)
@@ -49,7 +50,7 @@ public class SalvageMachine : Interactable
 
     protected override string DefaultThought(BodyScript body)
     {
-        return "Everything's bolted down. I'd need a toolbox to strip this.";
+        return Lore.MachineNoTools;
     }
 
     public override void Interact(BodyScript body)
@@ -76,6 +77,8 @@ public class SalvageMachine : Interactable
         if(salvagedSprite != null) GetComponent<SpriteRenderer>().sprite = salvagedSprite;
         Vector2 drop = (Vector2)transform.position + dropOffset;
         if(spareParts != null) Inventory.Give(spareParts, drop + Vector2.right * 0.4f);
-        NoteObject.Spawn(drop, noteTitle, noteBody, noteImage, noteWorldSprite);
+        //Note 5 (the child's letter) unless you wrote your own
+        if(string.IsNullOrEmpty(noteBody)) NoteObject.Spawn(drop, LoreNote.Note5_Machine, noteImage, noteWorldSprite);
+        else NoteObject.Spawn(drop, noteTitle, noteBody, noteImage, noteWorldSprite, LoreNote.Note5_Machine);
     }
 }

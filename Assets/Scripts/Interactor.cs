@@ -16,6 +16,8 @@ public class Interactor : MonoBehaviour
     public Shader outlineShader;
 
     public Interactable Current { get; private set; }
+    //The door the key goes to this frame (null when something nearer has it, or no door's in reach)
+    public RoomDoor DoorFocus { get; private set; }
 
     private Material outlineMaterial;
     private readonly Dictionary<Interactable, SpriteRenderer[]> outlines = new Dictionary<Interactable, SpriteRenderer[]>();
@@ -38,6 +40,7 @@ public class Interactor : MonoBehaviour
     {
         BodyScript body = bodyManager != null ? bodyManager.currentBody : null;
         Current = null;
+        DoorFocus = null;
         lit.Clear();
         if(body != null && Time.timeScale > 0f && !ModalUI.IsOpen)
         {
@@ -53,11 +56,18 @@ public class Interactor : MonoBehaviour
                 {
                     if(it == null || !it.isActiveAndEnabled) continue;
                     float d = it.DistanceFrom(body);
-                    if(d > it.range || it.Prompt(body) == null) continue;
+                    if(d > it.Range || it.Prompt(body) == null) continue;
                     lit.Add(it);
                     if(d >= best) continue;
                     best = d;
                     Current = it;
+                }
+                //Standing in a doorway: whichever is nearer gets the key, the door (RoomDoor handles it) or this
+                RoomDoor door = RoomDoor.NearestAt(body, out float doorDist);
+                if(door != null && (Current == null || doorDist <= best))
+                {
+                    Current = null;
+                    DoorFocus = door;
                 }
             }
             //Not on the same press that just closed a note / panel
@@ -79,13 +89,11 @@ public class Interactor : MonoBehaviour
         return $"[{interactKey}] {text}";
     }
 
-    //The player talking to themselves through the dialogue box
+    //The player talking to themselves: a short line floating over their head (the dialogue box was too much)
     void Mutter(string thought)
     {
-        if(string.IsNullOrEmpty(thought)) return;
-        DialogueController dialogue = GameManager.Get<DialogueController>();
-        if(dialogue != null) dialogue.StartDialogue(new[] { thought });
-        else Debug.Log("(thinks) " + thought);
+        if(string.IsNullOrEmpty(thought) || bodyManager == null || bodyManager.currentBody == null) return;
+        SpeechBubble.Say(bodyManager.currentBody.transform, thought, 3f);
     }
 
     void UpdateOutlines()

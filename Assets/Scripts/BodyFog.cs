@@ -15,6 +15,9 @@ public class BodyFog : MonoBehaviour
     //Has to cover the screen even when the camera stops at a wall and the player is near the edge
     public float coverSize = 32f;
     public float fadeTime = 0.6f;
+    [Tooltip("How black and white the screen goes with no eyes (0 = keep colours, 1 = fully grey)")]
+    [Range(0f, 1f)] public float desaturate = 1f;
+    static readonly int DesaturateId = Shader.PropertyToID("_JamDesaturate");
     //Draw on top of the world (UI canvases are still above). Empty = the topmost sorting layer
     public string fogSortingLayer = "";
     public int fogSortingOrder = 32000;
@@ -22,6 +25,11 @@ public class BodyFog : MonoBehaviour
     public Material material;
 
     private SpriteRenderer fog;
+
+    void OnDisable()
+    {
+        Shader.SetGlobalFloat(DesaturateId, 0f);
+    }
     private float builtRadius = -1f;
     private float alpha;
 
@@ -51,6 +59,8 @@ public class BodyFog : MonoBehaviour
             Build(so.fogRadius);
         }
         alpha = Mathf.MoveTowards(alpha, blind ? 1f : 0f, fadeTime > 0f ? Time.unscaledDeltaTime / fadeTime : 1f);
+        //No eyes, no colour: the CRT pass greys the screen out with the fog
+        Shader.SetGlobalFloat(DesaturateId, alpha * desaturate);
         fog.enabled = alpha > 0f && fog.sprite != null;
         if(!fog.enabled) return;
 

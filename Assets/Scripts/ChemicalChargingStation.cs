@@ -1,7 +1,11 @@
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
-//The table with the flasks lined up. With an empty battery: [F] to start, [Left]/[Right] to move between the flasks
-//on the table, [F] to pick / put back. Two picked: the right pair charges the battery, a wrong one fizzles.
+//The table with the flasks lined up. Each flask has a chemical label, shuffled every run: the right two are copper sulfate
+//and zinc sulfate (a copper/zinc cell, Daniell cell), the others are decoys (always H2SO4, battery acid, as the trap). With an empty battery: [F] to start,
+//[Left]/[Right] to move between the flasks, [F] to pick / put back. Two picked: the right pair charges the battery,
+//a wrong one fizzles (nothing lost). Labels are embossed, so the blind body can read them too.
 //Hints for the pair go in notes. Walk away or [Esc] to stop
 public class ChemicalChargingStation : Interactable
 {
@@ -13,10 +17,16 @@ public class ChemicalChargingStation : Interactable
     [Tooltip("The flask sprites on the table. Empty = found automatically (Flasks.png sprites within Flask Search Radius)")]
     public SpriteRenderer[] flasks;
     public float flaskSearchRadius = 2f;
-    //Flasks.png slice order: _0 Red, _1 Cyan, _2 Green, _3 Orange
-    public string[] colorNames = { "Red", "Cyan", "Green", "Orange" };
-    [Tooltip("The two colours that work (indexes into Color Names), any order")]
-    public int[] correctPair = { 1, 3 };
+    [Tooltip("The two labels that make the battery work, any order")]
+    public string[] correctLabels = { "CuSO4", "ZnSO4" };
+    [Tooltip("Decoys that are on the table every run. H2SO4 is battery acid: the obvious guess, and wrong on its own")]
+    public string[] alwaysDecoys = { "H2SO4" };
+    [Tooltip("Labels for the other flasks, picked at random each run")]
+    public string[] decoyLabels = { "NaCl", "H2O", "C2H5OH", "H2O2", "KNO3", "C6H12O6" };
+    [TextArea] public string acidLine = "It smokes and eats at the casing. Acid alone won't charge it - it needs the two metals.";
+    //Labels show under the flasks when you're this much past the station's range
+    public float labelShowDistance = 1f;
+    public int labelFontSize = 16;
     //Picked flasks lift a pixel or two
     public float pickedLift = 0.125f;
     public Color pickedTint = new Color(1f, 0.95f, 0.6f);
@@ -25,12 +35,15 @@ public class ChemicalChargingStation : Interactable
 
     public bool used;
 
+    private string[] labels = new string[0];
     private bool mixing;
     private int cursor;
     private bool[] picked = new bool[0];
     private Vector3[] restPositions;
     private SpriteRenderer marker;
     private BodyScript user;
+    private Canvas labelCanvas;
+    private Text[] labelTexts = new Text[0];
 
     void Reset()
     {
@@ -45,13 +58,15 @@ public class ChemicalChargingStation : Interactable
         restPositions = new Vector3[flasks.Length];
         for(int i = 0; i < flasks.Length; i++) restPositions[i] = flasks[i].transform.localPosition;
         picked = new bool[flasks.Length];
+        ShuffleLabels();
         BuildMarker();
+        BuildLabels();
     }
 
     //Flask sprites near the table, left to right
     void FindFlasks()
     {
-        var found = new System.Collections.Generic.List<SpriteRenderer>();
+        var found = new List<SpriteRenderer>();
         foreach(var sr in FindObjectsByType<SpriteRenderer>())
         {
             if(sr.sprite == null || !sr.sprite.name.StartsWith("Flasks")) continue;
@@ -62,11 +77,38 @@ public class ChemicalChargingStation : Interactable
         if(flasks.Length < 2) Debug.LogWarning("Chemical station: fewer than 2 flasks found nearby, assign Flasks by hand", this);
     }
 
+    //The right pair plus random decoys, dealt onto the flasks in a random order
+    void ShuffleLabels()
+    {
+        var pool = new List<string>(correctLabels);
+        foreach(var d in alwaysDecoys) if(pool.Count < flasks.Length && !string.IsNullOrEmpty(d)) pool.Add(d);
+        var decoys = new List<string>(decoyLabels);
+        decoys.RemoveAll(d => pool.Contains(d));
+        while(pool.Count < flasks.Length && decoys.Count > 0)
+        {
+            int d = Random.Range(0, decoys.Count);
+            pool.Add(decoys[d]);
+            decoys.RemoveAt(d);
+        }
+        while(pool.Count < flasks.Length) pool.Add("?");
+        for(int i = pool.Count - 1; i > 0; i--)
+        {
+            int j = Random.Range(0, i + 1);
+            (pool[i], pool[j]) = (pool[j], pool[i]);
+        }
+        labels = pool.GetRange(0, flasks.Length).ToArray();
+    }
+
     public override string Prompt(BodyScript body)
     {
         if(used || flasks.Length < 2) return null;
-        if(mixing) return $"Pick {ColorOf(cursor)} flask";
-        return Inventory != null && Inventory.Has(emptyBattery) ? "Mix chemicals" : "Chemical station (needs an empty battery)";
+        //Controls spelled out while mixing (the arrow keys and Esc aren't obvious)
+        if(mixing)
+        {
+            string action = picked[cursor] ? "Put back" : "Pick";
+            return $"{action} {labels[cursor]} ({PickedCount()}/2)\n[<- ->] Other flask   [Esc] Stop";
+        }
+        return Inventory != null && Inventory.Has(emptyBattery) ? "Mix chemicals (pick 2 flasks)" : "Chemical station (needs an empty battery)";
     }
 
     public override bool CanInteract(BodyScript body)
@@ -88,6 +130,7 @@ public class ChemicalChargingStation : Interactable
             Active = this;
             cursor = 0;
             ClearPicks();
+            SpeechBubble.Say(body.transform, Lore.StartMixing, 2.5f);
             return;
         }
         picked[cursor] = !picked[cursor];
@@ -111,21 +154,39 @@ public class ChemicalChargingStation : Interactable
         marker.transform.position = flasks[cursor].bounds.center + Vector3.up * (flasks[cursor].bounds.extents.y + 0.3f);
     }
 
+    //Labels under the flasks while the player is near the table
+    void LateUpdate()
+    {
+        BodyManager bm = GameManager.Get<BodyManager>();
+        BodyScript body = bm != null ? bm.currentBody : null;
+        Camera cam = Camera.main;
+        bool show = body != null && cam != null && Time.timeScale > 0f && DistanceFrom(body) <= range + labelShowDistance;
+        for(int i = 0; i < labelTexts.Length; i++)
+        {
+            labelTexts[i].enabled = show;
+            if(!show) continue;
+            Bounds b = flasks[i].bounds;
+            Vector3 screen = cam.WorldToScreenPoint(new Vector3(b.center.x, b.min.y - 0.05f, b.center.z));
+            if(RectTransformUtility.ScreenPointToLocalPointInRectangle((RectTransform)labelCanvas.transform, screen, null, out Vector2 local))
+            {
+                labelTexts[i].rectTransform.anchoredPosition = local;
+            }
+            labelTexts[i].color = picked.Length > i && picked[i] ? pickedTint : new Color(0.9f, 0.9f, 0.85f);
+        }
+    }
+
     void Check()
     {
-        int a = -1, b = -1;
-        for(int i = 0; i < picked.Length; i++)
-        {
-            if(!picked[i]) continue;
-            if(a < 0) a = i;
-            else b = i;
-        }
-        int ca = ColorIndex(a), cb = ColorIndex(b);
-        bool right = correctPair.Length == 2 &&
-                     ((ca == correctPair[0] && cb == correctPair[1]) || (ca == correctPair[1] && cb == correctPair[0]));
+        var chosen = new List<string>();
+        for(int i = 0; i < picked.Length; i++) if(picked[i]) chosen.Add(labels[i]);
+        bool right = chosen.Count == 2 && correctLabels.Length == 2 &&
+                     chosen.Contains(correctLabels[0]) && chosen.Contains(correctLabels[1]);
         if(!right)
         {
-            SpeechBubble.Say(transform, wrongLine, 2.5f);
+            //Picking the battery acid gets its own hint
+            bool acid = false;
+            foreach(var d in alwaysDecoys) acid |= chosen.Contains(d);
+            SpeechBubble.Say(transform, acid ? acidLine : wrongLine, acid ? 3.5f : 2.5f);
             ClearPicks();
             return;
         }
@@ -168,21 +229,6 @@ public class ChemicalChargingStation : Interactable
         return n;
     }
 
-    //Which colour a flask is: from its sprite name (Flasks_2 = Green), so the order on the table doesn't matter
-    int ColorIndex(int flask)
-    {
-        string n = flasks[flask].sprite != null ? flasks[flask].sprite.name : "";
-        int us = n.LastIndexOf('_');
-        if(us >= 0 && int.TryParse(n.Substring(us + 1), out int idx)) return idx;
-        return flask;
-    }
-
-    string ColorOf(int flask)
-    {
-        int c = ColorIndex(flask);
-        return c >= 0 && c < colorNames.Length ? colorNames[c] : "the";
-    }
-
     //Small down arrow
     void BuildMarker()
     {
@@ -200,5 +246,42 @@ public class ChemicalChargingStation : Interactable
         SortingLayer[] layers = SortingLayer.layers;
         if(layers.Length > 0) marker.sortingLayerID = layers[layers.Length - 1].id;
         marker.enabled = false;
+    }
+
+    void BuildLabels()
+    {
+        GameObject canvasObj = new GameObject("FlaskLabels");
+        labelCanvas = canvasObj.AddComponent<Canvas>();
+        labelCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        //Under the speech lines (45) and HUD (50)
+        labelCanvas.sortingOrder = 44;
+        CanvasScaler scaler = canvasObj.AddComponent<CanvasScaler>();
+        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        scaler.referenceResolution = new Vector2(1280, 720);
+        Font font = GameFont.Get();
+
+        labelTexts = new Text[flasks.Length];
+        for(int i = 0; i < flasks.Length; i++)
+        {
+            GameObject obj = new GameObject("Label " + labels[i]);
+            obj.transform.SetParent(canvasObj.transform, false);
+            Text t = obj.AddComponent<Text>();
+            t.font = font;
+            t.fontSize = labelFontSize;
+            t.fontStyle = FontStyle.Bold;
+            t.text = labels[i];
+            t.alignment = TextAnchor.UpperCenter;
+            t.horizontalOverflow = HorizontalWrapMode.Overflow;
+            t.raycastTarget = false;
+            Outline outline = obj.AddComponent<Outline>();
+            outline.effectColor = Color.black;
+            outline.effectDistance = new Vector2(1, -1);
+            RectTransform r = t.rectTransform;
+            r.anchorMin = r.anchorMax = new Vector2(0.5f, 0.5f);
+            r.pivot = new Vector2(0.5f, 1f);
+            r.sizeDelta = new Vector2(120, 24);
+            t.enabled = false;
+            labelTexts[i] = t;
+        }
     }
 }

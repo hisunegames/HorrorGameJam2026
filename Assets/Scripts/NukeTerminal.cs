@@ -99,7 +99,10 @@ public class NukeTerminal : Interactable
         if(timer > 0f) return;
         state = State.Idle;
         ModalUI.Instance.SetAlarm(false);
-        Enemy.KillPlayer(deathText);
+        //In her body, sealing her in with you: the true ending. Any other time it's just a death
+        GameOverScreen end = GameManager.Get<GameOverScreen>();
+        if(DaughterTransfer.Active && end != null) end.ShowEnding("TRUE ENDING", Lore.EndingTrue);
+        else Enemy.KillPlayer(deathText);
     }
 
     //Entered ones dimmed, the next one bracketed

@@ -25,16 +25,8 @@ public class LockedDoor : MonoBehaviour
         float distance = Vector2.Distance(transform.position,bodyManager.currentBody.transform.position);
         if(distance > interactrange) return;
         
-        bool canUnlockDoors = false;
-        foreach(var x in bodyManager.activeAbilities)
-        {
-            if (x == null) continue;
-            if (x.canUnlockDoors)
-            {
-                canUnlockDoors = true;
-                break;
-            }
-        }
+        //Only the body you're in now (not abilities kept from earlier bodies)
+        bool canUnlockDoors = bodyManager.CurrentCanUnlockDoors;
         if (!canUnlockDoors)
         {
             Debug.Log("Don't have Unlock Door Ability");

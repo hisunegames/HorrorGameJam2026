@@ -6,6 +6,16 @@ using UnityEngine.AI;
 public class Enemy : MonoBehaviour
 {
     public static event Action OnPlayerKilled;
+    //Started chasing the player (LoreTriggers: "Get away from me!")
+    public static event Action<Enemy> OnChaseStarted;
+    //Death line when she catches you (doesn't say who she is)
+    public const string DaughterKillCause = "Something caught you in the dark.";
+
+    static bool IsPlayer(Transform t)
+    {
+        BodyScript b = t != null ? t.GetComponent<BodyScript>() : null;
+        return b != null && b.isCurrentBody;
+    }
     //Why the player died this run (game over screen shows it). Empty = default line
     public static string LastDeathCause { get; private set; } = "";
     public static bool PlayerDied { get; private set; }
@@ -33,10 +43,11 @@ public class Enemy : MonoBehaviour
         };
     }
 
+    //In a locker, or lying still playing dead: it doesn't grab you even standing on top of you
     static bool IsHidden(Transform t)
     {
         BodyScript body = t.GetComponent<BodyScript>();
-        return body != null && body.isHiding;
+        return body != null && (body.isHiding || body.isPlayingDead);
     }
     public enum EnemyState {Wander , SoundTriggered , Chase , Return , Eat , FollowDoor , Stunned}
     public bool IsStunned => currentState == EnemyState.Stunned;
@@ -90,6 +101,23 @@ public class Enemy : MonoBehaviour
     [Tooltip("Optional: layers that block sight, e.g. walls. Empty = sees through everything in range")]
     public LayerMask sightBlockers;
     public float chaseLoseDistance = 12f;
+
+    [Header("Vision")]
+    [Tooltip("Width of the vision cone in degrees, out to Track Distance in the way it's moving")]
+    public float viewAngle = 110f;
+    [Tooltip("Notices anything this close whichever way it's facing")]
+    public float senseRadius = 1.2f;
+    public bool showVisionCone = true;
+    public Color coneColor = new Color(1f, 1f, 0.7f, 0.18f);
+    public Color chaseConeColor = new Color(1f, 0.15f, 0.1f, 0.25f);
+    //Jam/SpriteSilhouette (found automatically)
+    public Shader coneShader;
+    private Vector2 facing = Vector2.down;
+    private MeshFilter coneMesh;
+    private MeshRenderer coneRenderer;
+    private float builtRadius;
+    private float builtAngle;
+    private Color builtColor;
     [Tooltip("Smells blood from dragged bodies this far away and follows the trail")]
     public float bloodSmellRange = 6f;
     private float lastBloodTime = -1f;
@@ -137,6 +165,9 @@ public class Enemy : MonoBehaviour
     public float doorReachDistance = 1f;
     [Tooltip("After coming out of a door it keeps hunting this long even if the player is past Chase Lose Distance")]
     public float doorChaseGrace = 5f;
+    [Tooltip("Still follows you through a door this many seconds after losing you (you outran it to the door)")]
+    public float doorMemory = 5f;
+    private float lastChaseTime = -99f;
     private float doorGraceTimer;
     private Queue<RoomDoor> pendingDoors = new Queue<RoomDoor>();
     private RoomDoor followDoor;
@@ -162,6 +193,9 @@ public class Enemy : MonoBehaviour
     {
         RoomDoor.OnBodyUsedDoor -= HandleDoorUsed;
         Noise.OnNoise -= HandleNoise;
+        //Switched off (the player took her body): no cone, no crying
+        if(coneRenderer != null) coneRenderer.enabled = false;
+        if(chaseAudio != null) chaseAudio.Stop();
     }
 
     //Heard something: go check it out, unless busy or it's somewhere we can't walk to (another room)
@@ -178,6 +212,12 @@ public class Enemy : MonoBehaviour
         if(Vector2.Distance(transform.position, position) > hearingRange * loudness) return;
         if(!CanReachPoint(position)) return;
         SoundTrigger(position);
+    }
+
+    void OnValidate()
+    {
+        //Keeps the cone shader referenced so it's in builds
+        if(coneShader == null) coneShader = Shader.Find("Jam/SpriteSilhouette");
     }
 
     void Start()
@@ -221,13 +261,13 @@ public class Enemy : MonoBehaviour
             return;
         }
         Collider2D touching = Physics2D.OverlapCircle(transform.position, enemyKillRange, playerLayer);
-        //Can't get at you through a locker door
+        //Can't get at you through a locker door, or while you play dead
         if(touching != null && !IsHidden(touching.transform))
         {
             playerDead = true;
             agent.isStopped = true;
             if(chaseAudio != null) chaseAudio.Stop();
-            KillPlayer("The thing that was your daughter caught you.");
+            KillPlayer(DaughterKillCause);
             return;
         }
         //Caught in a trap: stands there (still deadly up close), then heads home
@@ -270,6 +310,7 @@ public class Enemy : MonoBehaviour
         if(targetInSight && cachedCanReach && currentState != EnemyState.Chase && currentState != EnemyState.Eat && reChaseTimer <= 0f)
         {
             currentState = EnemyState.Chase;
+            if(IsPlayer(target)) OnChaseStarted?.Invoke(this);
             ClearDoorFollow();
             StopTravel();
             isWaitingAtSound = false;
@@ -298,6 +339,7 @@ public class Enemy : MonoBehaviour
                 break;
 
         }
+        if(currentState == EnemyState.Chase || currentState == EnemyState.FollowDoor) lastChaseTime = Time.time;
         if(currentState != lastState)
         {
             lastState = currentState;
@@ -636,9 +678,13 @@ public class Enemy : MonoBehaviour
             if(detour != null) foreach(var door in detour) pendingDoors.Enqueue(door);
             return;
         }
-        if(currentState != EnemyState.Chase) return;
+        //Chasing, or lost you only a moment ago: it still heard which door you took
+        bool hunting = currentState == EnemyState.Chase ||
+                       (Time.time - lastChaseTime <= doorMemory && currentState != EnemyState.Eat && currentState != EnemyState.Stunned);
+        if(!hunting) return;
         if(!from.isShortcut)
         {
+            if(debugLogs && currentState != EnemyState.Chase) Debug.Log("Enemy: lost you a moment ago, still following through the door", this);
             StartFollowDoor(from);
             return;
         }
@@ -718,6 +764,20 @@ public class Enemy : MonoBehaviour
         followDoor = null;
     }
 
+    //Radio: goes to it whatever room it's in (through the doors), unless it's busy chasing, eating or stunned
+    public void Lure(Vector3 position)
+    {
+        if(playerDead || agent == null || !isActiveAndEnabled) return;
+        if(currentState == EnemyState.Chase || currentState == EnemyState.Eat || currentState == EnemyState.Stunned) return;
+        ClearDoorFollow();
+        soundTargetPos = position;
+        currentState = EnemyState.SoundTriggered;
+        isWaitingAtSound = false;
+        agent.isStopped = false;
+        TravelTo(position);
+        if(debugLogs) Debug.Log("Enemy: lured by a radio", this);
+    }
+
     public void SoundTrigger(Vector3 soundPos)
     {
         soundTargetPos = soundPos;
@@ -733,6 +793,8 @@ public class Enemy : MonoBehaviour
 
     void CheckSound()
     {
+        //Still going through doors to a lure in another room
+        if(UpdateTravel()) return;
         if(!isWaitingAtSound)
         {
             if(!agent.pathPending && agent.remainingDistance < 0.2f)
@@ -799,6 +861,94 @@ public class Enemy : MonoBehaviour
         }
     }
 
+    //Inside the vision cone, or close enough to sense whichever way it's facing
+    bool InView(Vector2 point)
+    {
+        Vector2 delta = point - (Vector2)transform.position;
+        if(delta.magnitude <= senseRadius) return true;
+        return Vector2.Angle(facing, delta) <= viewAngle * 0.5f;
+    }
+
+    void UpdateFacing()
+    {
+        Vector3 v = agent != null ? agent.velocity : Vector3.zero;
+        if(v.sqrMagnitude > 0.05f) facing = ((Vector2)v).normalized;
+    }
+
+    //Translucent fan on the floor showing what it can see (pale normally, red while chasing, hidden when stunned)
+    void LateUpdate()
+    {
+        if(agent == null) return;
+        UpdateFacing();
+        if(!showVisionCone || playerDead || IsStunned)
+        {
+            if(coneRenderer != null) coneRenderer.enabled = false;
+            return;
+        }
+        if(coneRenderer == null) BuildCone();
+        if(coneRenderer == null) return;
+        if(!Mathf.Approximately(builtRadius, trackDistance) || !Mathf.Approximately(builtAngle, viewAngle)) RebuildConeMesh();
+        coneRenderer.enabled = true;
+        bool chasing = currentState == EnemyState.Chase || currentState == EnemyState.FollowDoor;
+        Color c = chasing ? chaseConeColor : coneColor;
+        if(c != builtColor) RecolorCone(c);
+        coneRenderer.transform.rotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(facing.y, facing.x) * Mathf.Rad2Deg);
+    }
+
+    void BuildCone()
+    {
+        if(coneShader == null) coneShader = Shader.Find("Jam/SpriteSilhouette");
+        if(coneShader == null) return;
+        GameObject obj = new GameObject("VisionCone");
+        obj.transform.SetParent(transform, false);
+        coneMesh = obj.AddComponent<MeshFilter>();
+        coneRenderer = obj.AddComponent<MeshRenderer>();
+        coneRenderer.sharedMaterial = new Material(coneShader);
+        if(SortingLayer.NameToID("Prop") != 0) coneRenderer.sortingLayerName = "Prop";
+        coneRenderer.sortingOrder = -20;
+        coneMesh.mesh = new Mesh();
+        RebuildConeMesh();
+    }
+
+    //Fan pointing along +x; rotated to face where it's going
+    void RebuildConeMesh()
+    {
+        const int segments = 24;
+        builtRadius = trackDistance;
+        builtAngle = viewAngle;
+        var verts = new Vector3[segments + 2];
+        var tris = new int[segments * 3];
+        verts[0] = Vector3.zero;
+        for(int i = 0; i <= segments; i++)
+        {
+            float a = (-viewAngle * 0.5f + viewAngle * i / segments) * Mathf.Deg2Rad;
+            verts[i + 1] = new Vector3(Mathf.Cos(a), Mathf.Sin(a), 0f) * trackDistance;
+        }
+        for(int i = 0; i < segments; i++)
+        {
+            tris[i * 3] = 0;
+            tris[i * 3 + 1] = i + 2;
+            tris[i * 3 + 2] = i + 1;
+        }
+        Mesh mesh = coneMesh.mesh;
+        mesh.Clear();
+        mesh.vertices = verts;
+        mesh.triangles = tris;
+        mesh.uv = new Vector2[verts.Length];
+        builtColor = new Color(0, 0, 0, -1f);
+    }
+
+    void RecolorCone(Color c)
+    {
+        builtColor = c;
+        Mesh mesh = coneMesh.mesh;
+        var colors = new Color[mesh.vertexCount];
+        for(int i = 0; i < colors.Length; i++) colors[i] = c;
+        //Fades towards the edge of its sight
+        for(int i = 1; i < colors.Length; i++) colors[i].a = c.a * 0.35f;
+        mesh.colors = colors;
+    }
+
     Transform FindTarget()
     {
         Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position,trackDistance,playerLayer | baitLayer);
@@ -807,6 +957,7 @@ public class Enemy : MonoBehaviour
         foreach(var hit in hits)
         {
             if(!IsValidTarget(hit.transform)) continue;
+            if(!InView(hit.transform.position)) continue;
             if(sightBlockers != 0 && Physics2D.Linecast(transform.position,hit.transform.position,sightBlockers)) continue;
             float dist = Vector2.Distance(transform.position,hit.transform.position);
             if(dist < nearestDist)
@@ -864,16 +1015,24 @@ public class Enemy : MonoBehaviour
     {
         if(!NavMesh.SamplePosition(position, out NavMeshHit hit, 1.5f, NavMesh.AllAreas))
             return false;
- 
-        NavMesh.CalculatePath(transform.position, hit.position, NavMesh.AllAreas, pathCache);
+        //From where the agent really is on the NavMesh: the transform sits Base Offset away from it, and paths
+        //started from there failed now and then, which made it drop chases
+        if(agent == null || !agent.isOnNavMesh) return false;
+        agent.CalculatePath(hit.position, pathCache);
         return pathCache.status == NavMeshPathStatus.PathComplete;
     }
 
     //Select the enemy to see its senses: yellow = sight, cyan = hearing (for loudness 1, e.g. sprinting)
     void OnDrawGizmosSelected()
     {
+        //Vision cone (facing down until it moves), sense circle, hearing, kill range
         Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, trackDistance);
+        Vector2 f = Application.isPlaying ? facing : Vector2.down;
+        Vector3 l = Quaternion.Euler(0f, 0f, viewAngle * 0.5f) * f * trackDistance;
+        Vector3 r = Quaternion.Euler(0f, 0f, -viewAngle * 0.5f) * f * trackDistance;
+        Gizmos.DrawLine(transform.position, transform.position + l);
+        Gizmos.DrawLine(transform.position, transform.position + r);
+        Gizmos.DrawWireSphere(transform.position, senseRadius);
         Gizmos.color = Color.cyan;
         Gizmos.DrawWireSphere(transform.position, hearingRange);
         Gizmos.color = Color.red;

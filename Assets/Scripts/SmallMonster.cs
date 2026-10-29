@@ -9,6 +9,8 @@ using UnityEngine.AI;
 public class SmallMonster : MonoBehaviour
 {
     public static readonly List<SmallMonster> All = new List<SmallMonster>();
+    //Spotted the player (LoreTriggers: "I have to end your purpose.")
+    public static event System.Action<SmallMonster> OnChaseStarted;
 
     public float wanderSpeed = 1.5f;
     public float chaseSpeed = 2.6f;
@@ -18,6 +20,8 @@ public class SmallMonster : MonoBehaviour
     public float pounceTrigger = 2f;
     //Length of the leap (the red strip)
     public float pounceDistance = 2.75f;
+    //This leap's actual length (shorter than Pounce Distance if a wall is in the way)
+    private float leapLength;
     public float pounceSpeed = 11f;
     public float windUp = 0.6f;
     public float recover = 1f;
@@ -71,6 +75,7 @@ public class SmallMonster : MonoBehaviour
                 if(player != null)
                 {
                     state = State.Chase;
+                    OnChaseStarted?.Invoke(this);
                     break;
                 }
                 timer -= Time.deltaTime;
@@ -102,13 +107,19 @@ public class SmallMonster : MonoBehaviour
                 break;
 
             case State.Pounce:
-                Vector3 before = transform.position;
-                agent.Move(pounceDir * pounceSpeed * Time.deltaTime);
-                float step = Vector2.Distance(before, transform.position);
+                //Straight along the telegraphed line (agent.Move drifted off it with the 2D NavMesh), stopping at walls
+                //From the agent's NavMesh position, not the transform (that's Base Offset away and would add up every warp)
+                Vector3 before = agent.nextPosition;
+                float want = Mathf.Min(pounceSpeed * Time.deltaTime, leapLength - travelled);
+                Vector3 next = before + (Vector3)(pounceDir * want);
+                bool blocked = NavMesh.Raycast(before, next, out NavMeshHit edge, NavMesh.AllAreas);
+                if(blocked) next = edge.position;
+                agent.Warp(next);
+                float step = Vector2.Distance(before, next);
                 travelled += step;
                 if(CaughtPlayer()) return;
                 //Done, or hit a wall
-                if(travelled >= pounceDistance || step < pounceSpeed * Time.deltaTime * 0.25f)
+                if(travelled >= leapLength - 0.01f || blocked)
                 {
                     telegraph.gameObject.SetActive(false);
                     state = State.Recover;
@@ -133,7 +144,8 @@ public class SmallMonster : MonoBehaviour
         if(body == null || body.isHiding || body.isPlayingDead) return null;
         if(Vector2.Distance(body.transform.position, transform.position) > sightRange) return null;
         if(!NavMesh.SamplePosition(body.transform.position, out NavMeshHit hit, 1f, NavMesh.AllAreas)) return null;
-        NavMesh.CalculatePath(transform.position, hit.position, NavMesh.AllAreas, path);
+        //From the agent's own NavMesh position (the transform is Base Offset away from it)
+        agent.CalculatePath(hit.position, path);
         return path.status == NavMeshPathStatus.PathComplete ? body : null;
     }
 
@@ -153,16 +165,21 @@ public class SmallMonster : MonoBehaviour
         //Locked in now: the leap goes where the player was when it started shaking
         pounceDir = ((Vector2)(player.transform.position - transform.position)).normalized;
         if(pounceDir.sqrMagnitude < 0.01f) pounceDir = Vector2.down;
+        //How far it can really go that way (stops at the edge of the walkable floor): the strip shows exactly that
+        Vector3 start = agent.nextPosition;
+        Vector3 end = start + (Vector3)(pounceDir * pounceDistance);
+        leapLength = NavMesh.Raycast(start, end, out NavMeshHit edge, NavMesh.AllAreas) ? Vector2.Distance(start, edge.position) : pounceDistance;
         telegraph.position = transform.position;
         telegraph.rotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(pounceDir.y, pounceDir.x) * Mathf.Rad2Deg);
-        telegraph.localScale = new Vector3(pounceDistance, telegraphWidth, 1f);
+        telegraph.localScale = new Vector3(Mathf.Max(0.1f, leapLength), telegraphWidth, 1f);
         telegraph.gameObject.SetActive(true);
     }
 
     bool CaughtPlayer()
     {
         BodyScript body = bodyManager != null ? bodyManager.currentBody : null;
-        if(body == null || body.isHiding) return false;
+        //Hidden, or playing dead: the leap goes over you
+        if(body == null || body.isHiding || body.isPlayingDead) return false;
         if(Vector2.Distance(body.transform.position, transform.position) > hitRadius) return false;
         Enemy.KillPlayer("Something small and fast got your throat.");
         state = State.Recover;
