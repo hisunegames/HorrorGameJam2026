@@ -216,6 +216,10 @@ public class PlayerHUD : MonoBehaviour
             {
                 AddLine(key + "Set " + held.itemName + " (draws the monster here)");
             }
+            else if(held != null && held.kind == ItemKind.Throwable)
+            {
+                AddLine(key + "Throw " + held.itemName);
+            }
             else if(held != null && held.kind == ItemKind.Adrenaline)
             {
                 AddLine(key + "Inject " + held.itemName);

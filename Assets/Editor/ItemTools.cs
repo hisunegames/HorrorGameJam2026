@@ -50,6 +50,7 @@ public static class ItemTools
         made += Make("Finger", "Researcher's Finger", ItemKind.KeyItem, Art("Finger") ?? Placeholder("Finger", Finger()), null);
         //Placeholder until Radio.png is in PropNFurniture (rerun this and it switches over)
         made += Make("Radio", "Radio", ItemKind.Lure, Art("Radio") ?? Placeholder("Radio", Radio()), null);
+        made += Make("Flashbang", "Flashbang", ItemKind.Throwable, Art("SmokeBomb_Flash"), i => i.stunDuration = 4f);
         AssetDatabase.SaveAssets();
         Debug.Log($"Item assets: {made} new in {ItemFolder}. Edit their numbers there (range, charges, stun...)");
     }
@@ -126,7 +127,7 @@ public static class ItemTools
         {
             {"Beartrap", "BearTrap"}, {"Knife", "Knife"}, {"Saw", "Saw"}, {"NewSaw", "Saw"}, {"Chainsaw", "Chainsaw"},
             {"NewChainsaw", "Chainsaw"}, {"Shotgun", "Shotgun"}, {"Stun_Gun", "StunGun"}, {"Adrenaline", "Adrenaline"},
-            {"Toolbox", "Toolbox"}, {"Radio", "Radio"},
+            {"Toolbox", "Toolbox"}, {"Radio", "Radio"}, {"SmokeBomb_Flash", "Flashbang"},
         };
         var counts = new Dictionary<string, int>();
         foreach(var sr in Object.FindObjectsByType<SpriteRenderer>(FindObjectsInactive.Include))

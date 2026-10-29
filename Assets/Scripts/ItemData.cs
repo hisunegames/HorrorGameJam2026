@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public enum ItemKind { KeyItem, Trap, Weapon, Adrenaline, Lure }
+public enum ItemKind { KeyItem, Trap, Weapon, Adrenaline, Lure, Throwable }
 
 //One kind of item. Tools > Jam > Create Item Assets makes all the game's items in Assets/Items
 [CreateAssetMenu(fileName = "ItemData", menuName = "Scriptable Objects/Item Data")]
@@ -57,6 +57,18 @@ public class ItemData : ScriptableObject
     public float lureLoudness = 1.5f;
     //Optional static / music, looped while it plays
     public AudioClip lureSound;
+
+    [Header("Flashbang (Throwable)")]
+    //Tiles it flies the way you face (less if a wall is in the way)
+    public float throwDistance = 3.5f;
+    //Seconds on the floor before it goes off
+    public float fuseTime = 1f;
+    //Stuns the Amalgam (for Stun Duration, under Trap) and kills small monsters this close to it
+    public float blastRadius = 3f;
+    //Bang, same scale as Noise.Make (3 carries a room or two)
+    public float blastNoise = 3f;
+    //How long the white-out takes to fade
+    public float flashTime = 0.8f;
 
     public bool IsTrap => isTrap || kind == ItemKind.Trap;
     public int StartCharges => kind == ItemKind.Weapon ? Mathf.Max(1, charges) : 1;

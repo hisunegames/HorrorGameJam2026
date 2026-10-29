@@ -247,6 +247,10 @@ public class PlayerInventory : MonoBehaviour
                 RadioLure.Place(item, body.transform.position);
                 RemoveSelected();
                 return;
+            case ItemKind.Throwable:
+                Flashbang.Throw(item, body.transform.position, Facing);
+                RemoveSelected();
+                return;
         }
         if(item.IsTrap)
         {
