@@ -75,7 +75,7 @@ public class NoteObject : Interactable
         }
     }
 
-    //Notes that turn up during play (salvaged from the machine, the general's locker)
+    //Notes that turn up during play (salvaged from the machine)
     public static NoteObject Spawn(Vector2 position, LoreNote lore, Sprite image, Sprite worldSprite)
     {
         return Spawn(position, Lore.NoteTitle(lore), Lore.NoteBody(lore), image, worldSprite, lore);

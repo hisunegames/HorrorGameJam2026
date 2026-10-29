@@ -49,7 +49,7 @@ public class BodyCapsule : Interactable
 
     public override string Prompt(BodyScript body)
     {
-        return Body != null && !IsUsed && Lore.InspectBody(Body.customBodySO) != null ? "Inspect" : null;
+        return Body != null && !IsUsed && Lore.CanInspect(Body.customBodySO) ? "Inspect" : null;
     }
 
     public override void Interact(BodyScript body)

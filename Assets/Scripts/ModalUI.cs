@@ -144,6 +144,11 @@ public class ModalUI : MonoBehaviour
         picture = MakeImage(panel.transform, "Picture", new Vector2(0.25f, 0.45f), new Vector2(0.75f, 0.84f));
         picture.color = Color.white;
         bodyText = MakeText(panel.transform, "Body", 26, new Vector2(0.07f, 0.12f), new Vector2(0.93f, 0.84f), TextAnchor.UpperLeft);
+        //Long notes shrink to fit the panel instead of running off the bottom
+        bodyText.resizeTextForBestFit = true;
+        bodyText.resizeTextMinSize = 12;
+        bodyText.resizeTextMaxSize = 26;
+        bodyText.verticalOverflow = VerticalWrapMode.Truncate;
         footerText = MakeText(panel.transform, "Footer", 22, new Vector2(0.05f, 0.02f), new Vector2(0.95f, 0.1f), TextAnchor.MiddleCenter);
         footerText.color = new Color(0.6f, 0.6f, 0.55f);
 

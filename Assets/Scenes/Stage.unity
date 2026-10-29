@@ -291,7 +291,6 @@ MonoBehaviour:
   range: 1
   interactPoint: {fileID: 0}
   blockedThought: 
-  exitOffset: {x: 0, y: -0.6}
 --- !u!1 &11174266
 GameObject:
   m_ObjectHideFlags: 0
@@ -2610,7 +2609,6 @@ MonoBehaviour:
   range: 1
   interactPoint: {fileID: 0}
   blockedThought: 
-  exitOffset: {x: 0, y: -0.6}
 --- !u!1 &67243848
 GameObject:
   m_ObjectHideFlags: 0
@@ -4652,11 +4650,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 48c478d53e0b9554da0301f1f3ef0c51, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BodyCapsule
+  range: 1
+  interactPoint: {fileID: 0}
+  blockedThought: 
   capsuleRenderer: {fileID: 192309997}
   unusedSprite: {fileID: 21300000, guid: 8ce3ca210c6ef2b43857831ea63be7c5, type: 3}
   usedSprite: {fileID: 21300000, guid: 18b4dc6dd4a606a438d71c89aa321aba, type: 3}
   bodyOffset: {x: 0, y: 0.2}
-  forcedBody: {fileID: 8220164048687647453, guid: 0b0a1b53639877146b32b0fbdee7cdda, type: 3}
+  forcedBody: {fileID: 0}
+  insideTint: {r: 0.72, g: 0.95, b: 0.78, a: 0.9}
 --- !u!212 &192309997
 SpriteRenderer:
   serializedVersion: 3
@@ -12012,7 +12014,6 @@ MonoBehaviour:
   range: 1
   interactPoint: {fileID: 0}
   blockedThought: 
-  exitOffset: {x: 0, y: -0.6}
 --- !u!1 &456304834
 GameObject:
   m_ObjectHideFlags: 0
@@ -12684,11 +12685,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 48c478d53e0b9554da0301f1f3ef0c51, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BodyCapsule
+  range: 1
+  interactPoint: {fileID: 0}
+  blockedThought: 
   capsuleRenderer: {fileID: 461048279}
   unusedSprite: {fileID: 21300000, guid: 8ce3ca210c6ef2b43857831ea63be7c5, type: 3}
   usedSprite: {fileID: 21300000, guid: 18b4dc6dd4a606a438d71c89aa321aba, type: 3}
   bodyOffset: {x: 0, y: 0.2}
   forcedBody: {fileID: 0}
+  insideTint: {r: 0.72, g: 0.95, b: 0.78, a: 0.9}
 --- !u!212 &461048279
 SpriteRenderer:
   serializedVersion: 3
@@ -15594,7 +15599,6 @@ MonoBehaviour:
   range: 1
   interactPoint: {fileID: 0}
   blockedThought: 
-  exitOffset: {x: 0, y: -0.6}
 --- !u!1 &587749055
 GameObject:
   m_ObjectHideFlags: 0
@@ -15627,11 +15631,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 48c478d53e0b9554da0301f1f3ef0c51, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BodyCapsule
+  range: 1
+  interactPoint: {fileID: 0}
+  blockedThought: 
   capsuleRenderer: {fileID: 587749057}
   unusedSprite: {fileID: 21300000, guid: 8ce3ca210c6ef2b43857831ea63be7c5, type: 3}
   usedSprite: {fileID: 21300000, guid: 18b4dc6dd4a606a438d71c89aa321aba, type: 3}
   bodyOffset: {x: 0, y: 0.2}
   forcedBody: {fileID: 0}
+  insideTint: {r: 0.72, g: 0.95, b: 0.78, a: 0.9}
 --- !u!212 &587749057
 SpriteRenderer:
   serializedVersion: 3
@@ -15932,11 +15940,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 48c478d53e0b9554da0301f1f3ef0c51, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BodyCapsule
+  range: 1
+  interactPoint: {fileID: 0}
+  blockedThought: 
   capsuleRenderer: {fileID: 589037538}
   unusedSprite: {fileID: 21300000, guid: 8ce3ca210c6ef2b43857831ea63be7c5, type: 3}
   usedSprite: {fileID: 21300000, guid: 18b4dc6dd4a606a438d71c89aa321aba, type: 3}
   bodyOffset: {x: 0, y: 0.2}
   forcedBody: {fileID: 0}
+  insideTint: {r: 0.72, g: 0.95, b: 0.78, a: 0.9}
 --- !u!212 &589037538
 SpriteRenderer:
   serializedVersion: 3
@@ -20023,6 +20035,10 @@ MonoBehaviour:
   interactPoint: {fileID: 0}
   blockedThought: 
   openSprite: {fileID: 0}
+  capturedVideo: Captured.mp4
+  reunionVideo: Reunion.mp4
+  runChoice: Break free and run
+  embraceChoice: Embrace her
 --- !u!1 &778897620 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 4750800944402712538, guid: e59024f31af621d4188aa940bd803985, type: 3}
@@ -29381,7 +29397,6 @@ MonoBehaviour:
   range: 1
   interactPoint: {fileID: 0}
   blockedThought: 
-  exitOffset: {x: 0, y: -0.6}
 --- !u!1 &1025612605
 GameObject:
   m_ObjectHideFlags: 0
@@ -34473,7 +34488,6 @@ MonoBehaviour:
   range: 1
   interactPoint: {fileID: 0}
   blockedThought: 
-  exitOffset: {x: 0, y: -0.6}
 --- !u!1 &1212256774
 GameObject:
   m_ObjectHideFlags: 0
@@ -34805,11 +34819,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 48c478d53e0b9554da0301f1f3ef0c51, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BodyCapsule
+  range: 1
+  interactPoint: {fileID: 0}
+  blockedThought: 
   capsuleRenderer: {fileID: 1228799495}
   unusedSprite: {fileID: 21300000, guid: 8ce3ca210c6ef2b43857831ea63be7c5, type: 3}
   usedSprite: {fileID: 21300000, guid: 18b4dc6dd4a606a438d71c89aa321aba, type: 3}
   bodyOffset: {x: 0, y: 0.2}
   forcedBody: {fileID: 0}
+  insideTint: {r: 0.72, g: 0.95, b: 0.78, a: 0.9}
 --- !u!212 &1228799495
 SpriteRenderer:
   serializedVersion: 3
@@ -39526,7 +39544,6 @@ MonoBehaviour:
   range: 1
   interactPoint: {fileID: 0}
   blockedThought: 
-  exitOffset: {x: 0, y: -0.6}
 --- !u!1 &1428875961
 GameObject:
   m_ObjectHideFlags: 0
@@ -40795,6 +40812,8 @@ GameObject:
   m_Component:
   - component: {fileID: 1452626620}
   - component: {fileID: 1452626619}
+  - component: {fileID: 1452626622}
+  - component: {fileID: 1452626621}
   m_Layer: 0
   m_Name: Notes
   m_TagString: Untagged
@@ -40877,6 +40896,42 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: -89.954}
+--- !u!114 &1452626621
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1452626618}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b563f4b913f98264fa95cdc988516592, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NoteObject
+  range: 0.8
+  interactPoint: {fileID: 0}
+  blockedThought: 
+  lore: 0
+  title: Note
+  body: 
+  image: {fileID: 0}
+  hasBeenRead: 0
+--- !u!114 &1452626622
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1452626618}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9809bf1345abc5648af68b3a82653f08, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: NavMeshPlus::NavMeshPlus.Components.NavMeshModifier
+  m_OverrideArea: 0
+  m_Area: 0
+  m_IgnoreFromBuild: 1
+  m_AffectedAgents: ffffffff
 --- !u!1 &1476912741
 GameObject:
   m_ObjectHideFlags: 0
@@ -41628,7 +41683,6 @@ MonoBehaviour:
   range: 1
   interactPoint: {fileID: 0}
   blockedThought: 
-  exitOffset: {x: 0, y: -0.6}
 --- !u!1 &1516050464
 GameObject:
   m_ObjectHideFlags: 0
@@ -46671,6 +46725,9 @@ MonoBehaviour:
   - {fileID: 0}
   taken: 0
   emptySprite: {fileID: 0}
+  reachFromWater: 2.5
+  sparkColor: {r: 1, g: 0.95, b: 0.55, a: 1}
+  sparkInterval: {x: 0.25, y: 1.1}
 --- !u!1 &1728961450
 GameObject:
   m_ObjectHideFlags: 0
@@ -48086,7 +48143,6 @@ MonoBehaviour:
   range: 1
   interactPoint: {fileID: 0}
   blockedThought: 
-  exitOffset: {x: 0, y: -0.6}
 --- !u!1 &1774135141
 GameObject:
   m_ObjectHideFlags: 0
@@ -53152,6 +53208,10 @@ GameObject:
   - component: {fileID: 1942048014}
   - component: {fileID: 1942048017}
   - component: {fileID: 1942048016}
+  - component: {fileID: 1942048021}
+  - component: {fileID: 1942048020}
+  - component: {fileID: 1942048019}
+  - component: {fileID: 1942048018}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -53231,7 +53291,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameOverScreen
   blackScreen: {fileID: 1942048004}
   deathTitle: YOU DIED
-  deathLine: 'The knowledge dies with you.
+  deathLine: 'So it loops again.
 
 
     Press R to try again'
@@ -53530,6 +53590,82 @@ MonoBehaviour:
   focusColor: {r: 1, g: 0.85, b: 0.2, a: 1}
   inRangeColor: {r: 1, g: 0.85, b: 0.2, a: 0.45}
   outlineShader: {fileID: 4800000, guid: 743a8435a22f3d349b6fe61fdc04a4d5, type: 3}
+--- !u!114 &1942048018
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1942048000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bb1efeb371a564745bacdf79cb4c9eb4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NoiseIndicator
+  showRings: 0
+  ringColor: {r: 1, g: 1, b: 1, a: 0.35}
+  ringTime: 0.6
+  minRingGap: 0.3
+  fallbackHearingRange: 8
+  levelDecay: 0.8
+  sortingOrder: 32050
+--- !u!114 &1942048019
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1942048000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 13b49be0e44a9474b82a79460e7b6b14, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IntroVideo
+  videoFile: 
+  pressKeyTitle: SORRY, DAUGHTER
+  pressKeyText: Press any key
+  onlyOnFirstLoad: 1
+--- !u!114 &1942048020
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1942048000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 522dca01daa63aa40b1c8a30a1ec4023, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DaughterTransfer
+  bodyManager: {fileID: 0}
+  transferKey: 101
+  transferRange: 2
+  madnessTime: 75
+  daughterSpeed: 3.2
+  allowTransferNearHer: 0
+  vignetteColor: {r: 0, g: 0, b: 0, a: 1}
+  npcCount: 14
+  npcPrefabs: []
+  spawnRadius: 25
+  minSpawnDistance: 3
+  hintChance: 0.5
+  npcFleeSpeed: 2.9
+  killRange: 0.7
+--- !u!114 &1942048021
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1942048000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 016df18e393ec1c4dba9c2f78127cce0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LoreTriggers
+  bodyManager: {fileID: 0}
+  chaseLineCooldown: 20
+  halfBodyRange: 2.5
 --- !u!1001 &1960566270
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -55962,11 +56098,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 48c478d53e0b9554da0301f1f3ef0c51, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BodyCapsule
+  range: 1
+  interactPoint: {fileID: 0}
+  blockedThought: 
   capsuleRenderer: {fileID: 2051576328}
   unusedSprite: {fileID: 21300000, guid: 8ce3ca210c6ef2b43857831ea63be7c5, type: 3}
   usedSprite: {fileID: 21300000, guid: 18b4dc6dd4a606a438d71c89aa321aba, type: 3}
   bodyOffset: {x: 0, y: 0.2}
   forcedBody: {fileID: 0}
+  insideTint: {r: 0.72, g: 0.95, b: 0.78, a: 0.9}
 --- !u!212 &2051576328
 SpriteRenderer:
   serializedVersion: 3

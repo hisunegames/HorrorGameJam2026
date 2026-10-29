@@ -9,8 +9,13 @@ using UnityEngine.Video;
 //Runs on unscaled time, so the game can be paused behind it
 public static class CutscenePlayer
 {
-    //done(true) if it played (to the end or skipped), done(false) if it couldn't load
-    public static IEnumerator Play(string file, Func<bool> skipPressed, Action<bool> done, float loadTimeout = 10f)
+    //A video left on its last frame (holdLastFrame), until Release()
+    private static GameObject held;
+    private static RenderTexture heldTexture;
+
+    //done(true) if it played (to the end or skipped), done(false) if it couldn't load.
+    //holdLastFrame: leave the final frame on screen until Release() (e.g. under a choice)
+    public static IEnumerator Play(string file, Func<bool> skipPressed, Action<bool> done, float loadTimeout = 10f, bool holdLastFrame = false)
     {
         GameObject canvasObj = new GameObject("Cutscene");
         Canvas canvas = canvasObj.AddComponent<Canvas>();
@@ -61,10 +66,29 @@ public static class CutscenePlayer
         //The key that started it shouldn't skip it
         yield return null;
         while(player.isPlaying && !(skipPressed != null && skipPressed())) yield return null;
+        if(holdLastFrame)
+        {
+            //Paused on whatever frame it got to, still showing
+            player.Pause();
+            Release();
+            held = canvasObj;
+            heldTexture = target;
+            done?.Invoke(true);
+            yield break;
+        }
         player.Stop();
         UnityEngine.Object.Destroy(canvasObj);
         target.Release();
         done?.Invoke(true);
+    }
+
+    //Take down a held last frame
+    public static void Release()
+    {
+        if(held != null) UnityEngine.Object.Destroy(held);
+        if(heldTexture != null) heldTexture.Release();
+        held = null;
+        heldTexture = null;
     }
 
     public static bool AnySkipKey()

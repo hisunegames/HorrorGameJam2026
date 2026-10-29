@@ -1,7 +1,7 @@
 using UnityEngine;
 
 //Every note, line and ending in one place (from "Horror jam 2026 - Sorry, Daughter"). Edit the text here
-public enum LoreNote { None, Note1_FakeDoor, Note2_ToolRoom, Note3_NukeRoom, Note4_GeneralLocker, Note5_Machine, Note6_DaughterCage }
+public enum LoreNote { None, Note1_FakeDoor, Note2_ToolRoom, Note3_NukeRoom, Note4_Secret, Note5_Machine, Note6_DaughterCage }
 
 public static class Lore
 {
@@ -14,9 +14,9 @@ public static class Lore
             case LoreNote.Note1_FakeDoor: return "Memo";
             case LoreNote.Note2_ToolRoom: return "To Dr. Sidorov";
             case LoreNote.Note3_NukeRoom: return "What a shame";
-            case LoreNote.Note4_GeneralLocker: return "СОВЕРШЕННО СЕКРЕТНО";
+            case LoreNote.Note4_Secret: return "СОВЕРШЕННО СЕКРЕТНО";
             case LoreNote.Note5_Machine: return "Dear Santa";
-            case LoreNote.Note6_DaughterCage: return "Dear fucker";
+            case LoreNote.Note6_DaughterCage: return "Dear f***er";
         }
         return "Note";
     }
@@ -29,16 +29,16 @@ public static class Lore
                 return "I will soon return from Berlin to inspect project \"I\".\n" +
                        "I hope you have prepared some update to report to the general.";
             case LoreNote.Note2_ToolRoom:
-                return "I'm so done with your bullshit Dr. Sidorov, when will you stop working on side projects and fully focus on what we have to do?\n\n" +
+                return "I'm so done with your bulls**t Dr. Sidorov, when will you stop working on side projects and fully focus on what we have to do?\n\n" +
                        "What if the war becomes heated and has a full effect on us?\n\n" +
                        "We will all die eventually but our discoveries must be passed on to different living beings and you know damn well that only project \"I\" can make this work.\n\n" +
-                       "If you read this, you better get your ass to work.";
+                       "If you read this, you better get your a** to work.";
             case LoreNote.Note3_NukeRoom:
                 return "What a shame.\n\n" +
                        "When that contract was formed, it's like all funds spent on this radioactive bomb was a waste.\n\n" +
                        "With all other labs unwilling to take care of this thing, it has to stay here temporarily.\n\n" +
                        "But hey, with 1 project less, that guy will surely work on that occultish project to please the general right? Hope so, I don't want to work on shady stuff like that.";
-            case LoreNote.Note4_GeneralLocker:
+            case LoreNote.Note4_Secret:
                 return "The paper contains a receipt from higher officials. Sending funds to the general to support our lab for technology advancement but somehow, most of the money is gone with no proper explanation.";
             case LoreNote.Note5_Machine:
                 return "Dear santa\n\n" +
@@ -51,11 +51,11 @@ public static class Lore
                        "I promise I be a good girl.\n" +
                        "Please santa";
             case LoreNote.Note6_DaughterCage:
-                return "Dear fucker\n\n" +
+                return "Dear f***er\n\n" +
                        "Why don't you just go die?\n\n" +
                        "Why do you support the idea of sacrificing those poor people for few who actually gained something?\n\n" +
-                       "Why is it this time, money? thrill of experiment? or whatever inside that fucked up little head of yours?\n\n" +
-                       "Fuck you. And fuck your immortality (БЕССМЕРТИЕ) project. I don't care if the upper ranks that you lick their boots come looking for me. I'm leaking this project EVERYWHERE.\n\n" +
+                       "Why is it this time, money? thrill of experiment? or whatever inside that f***ed up little head of yours?\n\n" +
+                       "F*** you. And f*** your immortality (БЕССМЕРТИЕ) project. I don't care if the upper ranks that you lick their boots come looking for me. I'm leaking this project EVERYWHERE.\n\n" +
                        "Me and everyone will come looking for you.\n\n" +
                        "PS. I ask you to return MY daughter and you just turn a blind eye? The court may say that she is yours but I'm taking her back anyway. Don't even think about making her part of your projects.\n\n" +
                        "You are so dead";
@@ -66,16 +66,16 @@ public static class Lore
     // ---------- The scientist talking to himself ----------
 
     public const string FakeDoor = "I rather not go out that door.";
-    public static readonly string[] ScannerLocked = { "I need that bitch's fingerprint.", "It's locked." };
+    public static readonly string[] ScannerLocked = { "I need that b****'s fingerprint.", "It's locked." };
     public const string StartMixing = "I must get this right.";
     public const string MachineNoTools = "I need my equipment, somewhere near the nuke...";
     public const string HalfBody = "I remember having his torso somewhere around here. Weird, where did they go?";
     public static readonly string[] GainItem = { "This can be useful.", "Absolutely necessary.", "Aahaa." };
     public const string SmallMonsterChase = "I have to end your purpose.";
-    public static readonly string[] DaughterChase = { "Fucking hell.", "Get away from me!" };
+    public static readonly string[] DaughterChase = { "F***ing hell.", "Get away from me!" };
     public const string GeneratorStarts = "I'm getting out of here.";
-    public static readonly string[] BodySwap = { "Ahhh.. Fuck", "Bloody hell" };
-    public const string ResearcherKilled = "Loud ass bitch.";
+    public static readonly string[] BodySwap = { "Ahhh.. F***", "Bloody hell" };
+    public const string ResearcherKilled = "Loud a** b****.";
     public const string TakeHerBody = "I can't let her out. Not like this.";
 
     //People running around while you're in her body (DaughterTransfer). Some only scream...
@@ -111,14 +111,48 @@ public static class Lore
     }
 
     //Inspecting a body in a capsule (by body asset name)
+    //Short lines, one picked at random each time (never the same twice in a row)
+    static readonly string[] InspectMajor =
+    {
+        "I can access shortcuts with his fingerprints.",
+        "Why does he think those squeaky rubber boots are practical?",
+    };
+    static readonly string[] InspectBlindGuy =
+    {
+        "I wonder how she can live without seeing.",
+        "Her hearing must've been great.",
+    };
+    static readonly string[] InspectNoLegs =
+    {
+        "Such a defect.",
+        "Why did he have to lose his legs?",
+        "I guess his cowardice brought him here.",
+    };
+    static string lastInspect;
+
     public static string InspectBody(CustomBodySO body)
+    {
+        string[] pool = InspectPool(body);
+        if(pool == null || pool.Length == 0) return null;
+        string line = pool[Random.Range(0, pool.Length)];
+        if(pool.Length > 1 && line == lastInspect) line = pool[(System.Array.IndexOf(pool, line) + 1) % pool.Length];
+        lastInspect = line;
+        return line;
+    }
+
+    public static bool CanInspect(CustomBodySO body)
+    {
+        return InspectPool(body) != null;
+    }
+
+    static string[] InspectPool(CustomBodySO body)
     {
         if(body == null) return null;
         switch(body.name)
         {
-            case "Major": return "I can access shortcuts with his fingerprints. Why does he think those squeaky rubber boots are practical?";
-            case "BlindGuy": return "I wonder how she can live without seeing. Her hearing must've been great.";
-            case "NoLegs": return "Such a defect. Why did he have to lose his legs? I guess his cowardice brought him here.";
+            case "Major": return InspectMajor;
+            case "BlindGuy": return InspectBlindGuy;
+            case "NoLegs": return InspectNoLegs;
         }
         return null;
     }
@@ -132,24 +166,6 @@ public static class Lore
     };
     public static readonly string[] ResearcherWeapon = { "Ahhhh- D don't kill me!!!", "STAY AWAY FROM ME!!" };
     public static readonly string[] ResearcherAboutToDie = { "What did I do wrong doc...", "Promise me it will be painless." };
-
-    // ---------- The general in the locker ----------
-
-    public static readonly string[] GeneralTalk =
-    {
-        "Doctor: Oh What the hell?",
-        "General: What do you want?",
-        "Doctor: Why are you here, aren't you supposed to be in Germany?",
-        "General: None of your business now shoo!",
-    };
-    public static readonly string[] GeneralTalkArmed =
-    {
-        "Doctor: Oh What the hell?",
-        "General: Ahhh- eh, w-what do you want?",
-        "General: Don't you dare hurt me.",
-    };
-    public const string GeneralKilled = "I swear I will turn this cancer into a cancer cure.";
-    public const string GeneralSpared = "Good choice.";
 
     // ---------- Endings (pages on the black screen) ----------
 

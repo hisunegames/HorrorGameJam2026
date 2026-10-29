@@ -17,6 +17,8 @@ public class DaughterTransfer : MonoBehaviour
     public float madnessTime = 75f;
     //Her walking speed once she's yours
     public float daughterSpeed = 3.2f;
+    [Tooltip("Also let the player take her body by walking up to her and pressing E (normally it's the Embrace choice at the exit)")]
+    public bool allowTransferNearHer = false;
     public Color vignetteColor = Color.black;
 
     [Header("People running around while you're her")]
@@ -65,7 +67,7 @@ public class DaughterTransfer : MonoBehaviour
         BodyScript body = bodyManager != null ? bodyManager.currentBody : null;
         Enemy her = Reachable(body);
         //[E] is also swap: only take her if there's no ordinary body right there
-        if(her != null && Input.GetKeyDown(transferKey) && bodyManager.FindNearestBody() == null) Transfer(body, her);
+        if(allowTransferNearHer && her != null && Input.GetKeyDown(transferKey) && bodyManager.FindNearestBody() == null) Transfer(body, her);
     }
 
     //She's close enough to take. Only once you know everything (all six story papers read) and the power's back on
@@ -81,6 +83,22 @@ public class DaughterTransfer : MonoBehaviour
     }
 
     //Turn the monster into a body the player controls, and swap into it
+    //The Embrace choice at the exit: she's caught you there, so bring her to you and take her body
+    public void Embrace(BodyScript body)
+    {
+        if(Active || body == null) return;
+        Enemy her = FindAnyObjectByType<Enemy>();
+        if(her == null)
+        {
+            Debug.LogWarning("Daughter Transfer: no Amalgam in the scene to embrace", this);
+            return;
+        }
+        UnityEngine.AI.NavMeshAgent agent = her.GetComponent<UnityEngine.AI.NavMeshAgent>();
+        if(agent != null && agent.isOnNavMesh) agent.Warp(body.transform.position);
+        else her.transform.position = body.transform.position;
+        Transfer(body, her);
+    }
+
     void Transfer(BodyScript from, Enemy her)
     {
         GameObject go = her.gameObject;
