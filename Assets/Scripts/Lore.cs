@@ -88,6 +88,9 @@ public static class Lore
         "Get the doors shut!",
     };
     //...and some point the way to the true ending
+    //At the warhead in her body without all six papers
+    public const string NukeNoCodes = "Codes, switches, warnings... I never learned how to arm it. It's all in those papers.";
+
     public static readonly string[] NpcHints =
     {
         "The warhead! Someone has to set off the warhead!",

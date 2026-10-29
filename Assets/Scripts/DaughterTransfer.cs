@@ -14,7 +14,7 @@ public class DaughterTransfer : MonoBehaviour
     //How close to her you have to get (she's still deadly up close)
     public float transferRange = 2f;
     //Seconds as her until everything goes black
-    public float madnessTime = 75f;
+    public float madnessTime = 45f;
     //Her walking speed once she's yours
     public float daughterSpeed = 3.2f;
     [Tooltip("Also let the player take her body by walking up to her and pressing E (normally it's the Embrace choice at the exit)")]
@@ -184,7 +184,8 @@ public class DaughterTransfer : MonoBehaviour
             if(ai == null) ai = npc.gameObject.AddComponent<ResearcherAI>();
             ai.fleeSpeed = npcFleeSpeed;
             //What they shout when you come near
-            ai.monsterLines = Random.value < hintChance ? Lore.NpcHints : Lore.NpcPanic;
+            //They only talk about the warhead when it's any use to you (all six papers read)
+            ai.monsterLines = NoteObject.ReadAllStoryNotes && Random.value < hintChance ? Lore.NpcHints : Lore.NpcPanic;
             ai.talkCooldown = 5f;
             npcs.Add(npc);
         }

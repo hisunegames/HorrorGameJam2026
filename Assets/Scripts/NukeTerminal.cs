@@ -31,7 +31,19 @@ public class NukeTerminal : Interactable
 
     public override string Prompt(BodyScript body)
     {
-        return state == State.Idle && !done ? "Use the warhead console" : null;
+        if(state != State.Idle || done) return null;
+        return CanInteract(body) ? "Use the warhead console" : "Warhead console";
+    }
+
+    //In her body you only know the arming codes if you read all six papers (the true ending)
+    public override bool CanInteract(BodyScript body)
+    {
+        return !DaughterTransfer.Active || NoteObject.ReadAllStoryNotes;
+    }
+
+    protected override string DefaultThought(BodyScript body)
+    {
+        return Lore.NukeNoCodes;
     }
 
     public override void Interact(BodyScript body)

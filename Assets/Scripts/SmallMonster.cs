@@ -141,7 +141,8 @@ public class SmallMonster : MonoBehaviour
     BodyScript Visible()
     {
         BodyScript body = bodyManager != null ? bodyManager.currentBody : null;
-        if(body == null || body.isHiding || body.isPlayingDead) return null;
+        //In her body you're one of them: it leaves you alone
+        if(body == null || body.isHiding || body.isPlayingDead || DaughterTransfer.Active) return null;
         if(Vector2.Distance(body.transform.position, transform.position) > sightRange) return null;
         if(!NavMesh.SamplePosition(body.transform.position, out NavMeshHit hit, 1f, NavMesh.AllAreas)) return null;
         //From the agent's own NavMesh position (the transform is Base Offset away from it)
@@ -192,8 +193,8 @@ public class SmallMonster : MonoBehaviour
     bool CaughtPlayer(Vector3 from, Vector3 to)
     {
         BodyScript body = bodyManager != null ? bodyManager.currentBody : null;
-        //Hidden, or playing dead: the leap goes over you
-        if(body == null || body.isHiding || body.isPlayingDead) return false;
+        //Hidden, playing dead, or in her body: the leap goes over you
+        if(body == null || body.isHiding || body.isPlayingDead || DaughterTransfer.Active) return false;
         Vector2 a = from, b = to, p = body.transform.position;
         Vector2 ab = b - a;
         float t = ab.sqrMagnitude > 0f ? Mathf.Clamp01(Vector2.Dot(p - a, ab) / ab.sqrMagnitude) : 0f;

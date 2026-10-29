@@ -71,8 +71,31 @@ public class GameOverScreen : MonoBehaviour
     {
         if(isGameOver) return;
         isGameOver = true;
+        RecordEnding(title);
         StartCoroutine(EndingRoutine(title, pages, VideoFor(title)));
     }
+
+    //The four endings; which ones you've seen is saved between plays
+    static readonly string[] Endings = { "DEFIED DEATH", "IT NEVER WORKED", "KARMA", "TRUE ENDING" };
+
+    static void RecordEnding(string title)
+    {
+        if(System.Array.IndexOf(Endings, title) < 0) return;
+        PlayerPrefs.SetInt("Ending_" + title, 1);
+        PlayerPrefs.Save();
+    }
+
+    public static int EndingsFound
+    {
+        get
+        {
+            int found = 0;
+            foreach(string e in Endings) if(PlayerPrefs.GetInt("Ending_" + e, 0) == 1) found++;
+            return found;
+        }
+    }
+
+    public static int EndingCount => Endings.Length;
 
     string VideoFor(string title)
     {
@@ -111,7 +134,7 @@ public class GameOverScreen : MonoBehaviour
         for(int i = 0; i < pages.Length; i++)
         {
             bool last = i == pages.Length - 1;
-            string hint = last ? "\n\n\n" + Lore.Game + "\n\nPress R to play again" : "\n\n\n[Space]";
+            string hint = last ? $"\n\n\n{Lore.Game}\n\nEndings found: {EndingsFound}/{EndingCount}\n\nPress R to play again" : "\n\n\n[Space]";
             blackScreen.SetText(title, pages[i] + hint);
             if(i == 0) yield return blackScreen.FadeIn();
             if(last) break;
