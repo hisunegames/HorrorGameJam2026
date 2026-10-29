@@ -17,6 +17,14 @@ public static class CutscenePlayer
     //holdLastFrame: leave the final frame on screen until Release() (e.g. under a choice)
     public static IEnumerator Play(string file, Func<bool> skipPressed, Action<bool> done, float loadTimeout = 10f, bool holdLastFrame = false)
     {
+        //Not there yet (or an empty / Git LFS placeholder file): skip it without the video player erroring.
+        //WebGL can't look at files, so there it just tries and times out
+        if(!Exists(file))
+        {
+            Debug.Log("Video " + file + " isn't in StreamingAssets, skipping it");
+            done?.Invoke(false);
+            yield break;
+        }
         GameObject canvasObj = new GameObject("Cutscene");
         Canvas canvas = canvasObj.AddComponent<Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
@@ -80,6 +88,15 @@ public static class CutscenePlayer
         UnityEngine.Object.Destroy(canvasObj);
         target.Release();
         done?.Invoke(true);
+    }
+
+    static bool Exists(string file)
+    {
+        if(string.IsNullOrEmpty(file)) return false;
+        if(Application.platform == RuntimePlatform.WebGLPlayer) return true;
+        string path = System.IO.Path.Combine(Application.streamingAssetsPath, file);
+        //Under 1 KB can't be a real video (LFS leaves a ~130 byte pointer when it hasn't been pulled)
+        return System.IO.File.Exists(path) && new System.IO.FileInfo(path).Length > 1024;
     }
 
     //Take down a held last frame
