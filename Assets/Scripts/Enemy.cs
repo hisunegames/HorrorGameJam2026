@@ -172,6 +172,10 @@ public class Enemy : MonoBehaviour
     private Queue<RoomDoor> pendingDoors = new Queue<RoomDoor>();
     private RoomDoor followDoor;
     private float doorWaitTimer;
+    [Tooltip("Goes through anyway if it can't get right up to the door in this long (NavMesh stops short of it)")]
+    public float doorStuckTime = 4f;
+    private float doorStuckTimer;
+    private Vector3 followDoorPoint;
 
     [Header("Travelling between rooms")]
     [Tooltip("Wander points (and home) can be in other rooms: it walks there door by door, taking the door that leads closest each time")]
@@ -595,6 +599,8 @@ public class Enemy : MonoBehaviour
         }
         else
         {
+            //No path because they're in another room (seen through a gap, or got there without it noticing the door): go round through the doors
+            if(!tooFar && followThroughDoors && ChaseThroughDoors()) return;
             loseTimer += Time.deltaTime;
             if(loseTimer >= loseTargetDelay)
             {
@@ -704,17 +710,37 @@ public class Enemy : MonoBehaviour
         Debug.Log($"Enemy: player took a shortcut, going the long way ({route.Count} doors)", this);
     }
 
+    //Door route from this room to the player's room; true if it set off along it
+    bool ChaseThroughDoors()
+    {
+        Transform here = RoomMap.RoomAt(agent.nextPosition);
+        Transform there = RoomMap.RoomAt(target.position);
+        if(here == null || there == null || here == there) return false;
+        List<RoomDoor> route = RoomMap.FindRoute(here, there);
+        if(route == null || route.Count == 0) return false;
+        if(debugLogs) Debug.Log($"Enemy: player is in {there.name}, going through {route.Count} door(s)", this);
+        pendingDoors.Clear();
+        for(int i = 1; i < route.Count; i++) pendingDoors.Enqueue(route[i]);
+        StartFollowDoor(route[0]);
+        return true;
+    }
+
     void StartFollowDoor(RoomDoor door)
     {
         StopTravel();
         followDoor = door;
         doorWaitTimer = 0f;
+        doorStuckTimer = 0f;
         currentState = EnemyState.FollowDoor;
         agent.isStopped = false;
-        if(NavMesh.SamplePosition(door.ExitPoint, out NavMeshHit hit, navSampleRadius, NavMesh.AllAreas))
+        //The nearest floor to the door (the NavMesh can stop a little short of it)
+        followDoorPoint = door.ExitPoint;
+        if(SampleNear(door.ExitPoint, out Vector3 point))
         {
-            agent.SetDestination(hit.position);
+            followDoorPoint = point;
+            agent.SetDestination(point);
         }
+        else if(debugLogs) Debug.LogWarning("Enemy: no NavMesh near " + door.name + ", will go through after Door Stuck Time", door);
         lastState = currentState;
         ApplyStateLook();
     }
@@ -728,15 +754,21 @@ public class Enemy : MonoBehaviour
             GoBackToStart();
             return;
         }
-        if(Vector2.Distance(transform.position, followDoor.ExitPoint) > doorReachDistance) return;
+        //At the door: close to it, at the end of the path to it, or stuck trying for too long
+        doorStuckTimer += Time.deltaTime;
+        bool arrived = Vector2.Distance(agent.nextPosition, followDoor.ExitPoint) <= doorReachDistance ||
+                       Vector2.Distance(agent.nextPosition, followDoorPoint) <= doorReachDistance ||
+                       (!agent.pathPending && agent.pathStatus == NavMeshPathStatus.PathComplete && agent.remainingDistance <= 0.3f);
+        if(!arrived && doorStuckTimer < doorStuckTime) return;
 
         doorWaitTimer += Time.deltaTime;
         if(doorWaitTimer < doorFollowDelay) return;
 
         RoomDoor through = followDoor;
-        if(NavMesh.SamplePosition(through.linkedDoor.ExitPoint, out NavMeshHit hit, navSampleRadius, NavMesh.AllAreas))
+        if(debugLogs) Debug.Log("Enemy: following through " + through.name, this);
+        if(SampleNear(through.linkedDoor.ExitPoint, out Vector3 landing))
         {
-            agent.Warp(hit.position);
+            agent.Warp(landing);
         }
         else
         {
@@ -756,6 +788,19 @@ public class Enemy : MonoBehaviour
         loseTimer = 0f;
         doorGraceTimer = doorChaseGrace;
         cachedCanReach = CanReachPlayer();
+    }
+
+    //Closest NavMesh point, looking further out if there's nothing right there
+    bool SampleNear(Vector3 position, out Vector3 point)
+    {
+        if(NavMesh.SamplePosition(position, out NavMeshHit hit, navSampleRadius, NavMesh.AllAreas) ||
+           NavMesh.SamplePosition(position, out hit, navSampleRadius * 3f, NavMesh.AllAreas))
+        {
+            point = hit.position;
+            return true;
+        }
+        point = position;
+        return false;
     }
 
     void ClearDoorFollow()

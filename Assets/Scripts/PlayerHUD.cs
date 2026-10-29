@@ -197,7 +197,8 @@ public class PlayerHUD : MonoBehaviour
         }
         if(playDead != null && body.customBodySO != null && body.customBodySO.canPlayDead && EnemyNear(body))
         {
-            AddLine($"[{playDead.playDeadKey}] Play dead");
+            float wait = playDead.CooldownLeft;
+            AddLine(wait > 0f ? $"Play dead ({Mathf.CeilToInt(wait)}s)" : $"[{playDead.playDeadKey}] Play dead");
         }
         //Lockers, notes, pickups, objectives...
         string interact = interactor != null ? interactor.PromptLine(body) : null;

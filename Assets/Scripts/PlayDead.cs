@@ -14,8 +14,12 @@ public class PlayDead : MonoBehaviour
     public float minStaminaToStart = 10f;
     //Collapse animation speed when dropping on purpose (leaving a body plays it at 1x)
     public float dropAnimationSpeed = 3f;
+    [Tooltip("Seconds after getting up before you can play dead again")]
+    public float cooldown = 5f;
 
     public bool IsPlayingDead => body != null && body.isPlayingDead;
+    public float CooldownLeft => Mathf.Max(0f, readyTime - Time.time);
+    private float readyTime;
 
     private BodyScript body;
     private Sprite standingSprite;
@@ -40,7 +44,7 @@ public class PlayDead : MonoBehaviour
         if(!current.isPlayingDead)
         {
             bool enoughStamina = sprint == null || (!sprint.IsExhausted && sprint.Stamina >= minStaminaToStart);
-            if(holding && Input.GetKeyDown(playDeadKey) && enoughStamina) Drop(current);
+            if(holding && Input.GetKeyDown(playDeadKey) && enoughStamina && CooldownLeft <= 0f) Drop(current);
             return;
         }
 
@@ -78,6 +82,7 @@ public class PlayDead : MonoBehaviour
     {
         if(body == null) return;
         body.isPlayingDead = false;
+        readyTime = Time.time + cooldown;
         //Swapped away or left behind: the body keeps lying there, BodyScript handles it
         if(body.isCurrentBody)
         {
