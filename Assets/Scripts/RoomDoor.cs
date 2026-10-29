@@ -60,7 +60,7 @@ public class RoomDoor : MonoBehaviour
         }
         if (IsLocked)
         {
-            SFXManager.Instance.PlaySFX("lock");
+            SFXManager.Play("lock");
             return;
         }
         StartCoroutine(GoThrough(body));
@@ -139,7 +139,7 @@ public class RoomDoor : MonoBehaviour
             blackScreen.SetText("", "");
             yield return blackScreen.FadeIn(fadeTime);
         }
-        SFXManager.Instance.PlaySFX("door");
+        SFXManager.Play("door");
         Vector3 from = body.transform.position;
         Vector3 to = linkedDoor.ExitPoint;
         to.z = from.z;

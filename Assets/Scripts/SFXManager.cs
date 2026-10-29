@@ -12,6 +12,14 @@ public class SFXManager : MonoBehaviour
     [SerializeField] AudioClip _stab;
     [SerializeField] AudioClip _shoot;
     [SerializeField] AudioClip _note;
+    [SerializeField] AudioClip _gen;
+    [SerializeField] AudioClip _salvage;
+    [SerializeField] AudioClip _bodyswap;
+    [SerializeField] AudioClip _flash;
+    //Played by PlayerSprint on each step (bodies with their own Footstep Sounds use those instead)
+    [SerializeField] AudioClip _footsteps;
+
+    public static AudioClip Footstep => Instance != null ? Instance._footsteps : null;
 
     public static SFXManager Instance;
     private void Awake()
@@ -54,6 +62,12 @@ public class SFXManager : MonoBehaviour
             audioSource.Play();
     }
 
+    //Safe from anywhere: does nothing in a scene without an SFXManager
+    public static void Play(string sound)
+    {
+        if (Instance != null) Instance.PlaySFX(sound);
+    }
+
     public void PlaySFX(string Sound)
     {
 
@@ -67,6 +81,10 @@ public class SFXManager : MonoBehaviour
         else if (Sound == "shoot") audioSource.clip = _shoot;
         else if (Sound == "note") audioSource.clip = _note;
         else if (Sound == "scan") audioSource.clip = _scan;
+        else if (Sound == "gen") audioSource.clip = _gen;
+        else if (Sound == "salvage") audioSource.clip = _salvage;
+        else if (Sound == "bodyswap") audioSource.clip = _bodyswap;
+        else if (Sound == "flash") audioSource.clip = _flash;
 
         audioSource.Play();
     }

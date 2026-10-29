@@ -7,7 +7,7 @@ using UnityEngine;
 public class IntroVideo : MonoBehaviour
 {
     [Tooltip("File name inside Assets/StreamingAssets, e.g. Intro.mp4. Empty = no opening video")]
-    public string videoFile = "";
+    public string videoFile = "Intro_Final.mp4";
     public string pressKeyTitle = Lore.Game;
     public string pressKeyText = "Press any key";
     //Only the first time the scene loads, not after dying and pressing R
@@ -24,6 +24,8 @@ public class IntroVideo : MonoBehaviour
     IEnumerator Start()
     {
         if(string.IsNullOrEmpty(videoFile) || (onlyOnFirstLoad && shownThisSession)) yield break;
+        //A scene with the main menu pauses for that instead (both would fight over the pause)
+        if(FindAnyObjectByType<MainMenu>() != null) yield break;
         shownThisSession = true;
         float oldScale = Time.timeScale;
         Time.timeScale = 0f;

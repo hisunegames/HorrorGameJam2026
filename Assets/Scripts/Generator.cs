@@ -60,6 +60,7 @@ public class Generator : Interactable
         //It's loud
         if(startNoise > 0f) Noise.Make(transform.position, startNoise);
         Debug.Log("Generator running, exit open", this);
+        SFXManager.Play("gen");
         SpeechBubble.Say(body.transform, Lore.GeneratorStarts, 3f);
         OnFixed?.Invoke();
     }

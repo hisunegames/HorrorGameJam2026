@@ -16,9 +16,9 @@ public class GameOverScreen : MonoBehaviour
 
     [Header("Ending cutscenes (optional, play before the text)")]
     [Tooltip("File names inside Assets/StreamingAssets, e.g. Karma.mp4. Empty = no video for that ending")]
-    public string defiedDeathVideo = "";
+    public string defiedDeathVideo = "Escape_Final.mp4";
     public string karmaVideo = "";
-    public string neverWorkedVideo = "";
+    public string neverWorkedVideo = "Escape_Final.mp4";
     public string trueEndingVideo = "";
     //Gives up on a video that won't load (missing file, unsupported format) after this many seconds
     public float videoLoadTimeout = 10f;
@@ -111,14 +111,15 @@ public class GameOverScreen : MonoBehaviour
 
     IEnumerator EndingRoutine(string title, string[] pages, string videoFile)
     {
+        bool played = false;
         if(!string.IsNullOrEmpty(videoFile))
         {
             Time.timeScale = 0f;
-            bool played = false;
             yield return CutscenePlayer.Play(videoFile, CutscenePlayer.AnySkipKey, ok => played = ok, videoLoadTimeout);
             if(played && videoReplacesText) pages = new[] { "" };
         }
-        yield return PagesRoutine(title, pages);
+        //Straight from the video's last frame to the black text pages (no glimpse of the level in between)
+        yield return PagesRoutine(title, pages, played);
     }
 
     IEnumerator EndRoutine(string title, string body)
@@ -128,7 +129,7 @@ public class GameOverScreen : MonoBehaviour
         yield return blackScreen.FadeIn();
     }
 
-    IEnumerator PagesRoutine(string title, string[] pages)
+    IEnumerator PagesRoutine(string title, string[] pages, bool cutToBlack = false)
     {
         Time.timeScale = 0f;
         for(int i = 0; i < pages.Length; i++)
@@ -136,7 +137,7 @@ public class GameOverScreen : MonoBehaviour
             bool last = i == pages.Length - 1;
             string hint = last ? $"\n\n\n{Lore.Game}\n\nEndings found: {EndingsFound}/{EndingCount}\n\nPress R to play again" : "\n\n\n[Space]";
             blackScreen.SetText(title, pages[i] + hint);
-            if(i == 0) yield return blackScreen.FadeIn();
+            if(i == 0) yield return cutToBlack ? blackScreen.FadeIn(0f) : blackScreen.FadeIn();
             if(last) break;
             nextPage = false;
             while(!nextPage) yield return null;
@@ -145,6 +146,12 @@ public class GameOverScreen : MonoBehaviour
     }
 
     void Restart()
+    {
+        ReloadScene();
+    }
+
+    //Start this level again (R on the end screens, Restart in the pause menu)
+    public static void ReloadScene()
     {
         Time.timeScale = 1f;
         Scene scene = SceneManager.GetActiveScene();

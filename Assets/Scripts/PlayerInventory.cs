@@ -152,7 +152,8 @@ public class PlayerInventory : MonoBehaviour
     void Update()
     {
         BodyScript body = bodyManager != null ? bodyManager.currentBody : null;
-        if(body == null || Time.timeScale == 0f || ModalUI.IsOpen) return;
+        //In her body there are no hands for items
+        if(body == null || Time.timeScale == 0f || ModalUI.IsOpen || DaughterTransfer.Active) return;
         Vector2 v = body.rb.linearVelocity;
         if(v.sqrMagnitude > 0.01f) Facing = v.normalized;
         UpdateHeld(body);
@@ -181,7 +182,7 @@ public class PlayerInventory : MonoBehaviour
         if(item == null || IsFull) return false;
         items.Add(new ItemStack(item, charges > 0 ? charges : item.StartCharges));
         OnChanged?.Invoke();
-        SFXManager.Instance.PlaySFX("item");
+        SFXManager.Play("item");
         return true;
     }
 
@@ -243,8 +244,8 @@ public class PlayerInventory : MonoBehaviour
                 return;
             case ItemKind.Weapon:
                 if(UseWeapon(body, stack)) SpendCharge(stack);
-                if (item.ranged == true) SFXManager.Instance.PlaySFX("shoot");
-                else SFXManager.Instance.PlaySFX("stab");
+                if (item.ranged == true) SFXManager.Play("shoot");
+                else SFXManager.Play("stab");
                 return;
             case ItemKind.Lure:
                 RadioLure.Place(item, body.transform.position);

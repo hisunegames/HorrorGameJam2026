@@ -43,7 +43,8 @@ public class LoreTriggers : MonoBehaviour
     void Say(string line)
     {
         BodyScript body = bodyManager != null ? bodyManager.currentBody : null;
-        if(body != null) SpeechBubble.Say(body.transform, line, 2.5f);
+        //The doctor's own reactions don't fit once you're her
+        if(body != null && !DaughterTransfer.Active) SpeechBubble.Say(body.transform, line, 2.5f);
     }
 
     static string Pick(string[] lines)

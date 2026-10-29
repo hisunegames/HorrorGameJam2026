@@ -72,6 +72,7 @@ public class Flashbang : MonoBehaviour
             if(!small.IsDead && Vector2.Distance(small.transform.position, at) <= item.blastRadius) small.Kill();
         }
         if(item.blastNoise > 0f) Noise.Make(at, item.blastNoise);
+        SFXManager.Play("flash");
 
         //Burst of white sparks
         GameObject burst = new GameObject("FlashBurst");

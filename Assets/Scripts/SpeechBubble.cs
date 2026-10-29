@@ -1,3 +1,5 @@
+using Febucci.UI;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,7 +11,8 @@ public class SpeechBubble : MonoBehaviour
     public Color color = new Color(0.95f, 0.9f, 0.8f);
 
     private static Canvas canvas;
-    private Text text;
+    private TextMeshProUGUI text;
+    private TypewriterByCharacter typewriter;
     private float timer;
 
     //height: world units above the speaker (default 1.2, about a head above a person). Lower for things on walls
@@ -25,9 +28,10 @@ public class SpeechBubble : MonoBehaviour
     void Show(string line, float seconds)
     {
         if(text == null) Build();
-        text.text = line;
-        timer = seconds;
         text.enabled = true;
+        //Types in (Text Animator); a long line gets the time it takes to type on top
+        typewriter.ShowText(line);
+        timer = seconds + line.Length * typewriter.waitForNormalChars;
     }
 
     void LateUpdate()
@@ -73,18 +77,20 @@ public class SpeechBubble : MonoBehaviour
         }
         GameObject obj = new GameObject(name + " speech");
         obj.transform.SetParent(canvas.transform, false);
-        text = obj.AddComponent<Text>();
-        text.font = GameFont.Get();
+        text = obj.AddComponent<TextMeshProUGUI>();
+        TMP_FontAsset font = GameFont.GetTMP();
+        if(font != null) text.font = font;
         text.fontSize = 26;
-        text.fontStyle = FontStyle.Italic;
+        text.fontStyle = FontStyles.Italic;
         text.color = color;
-        text.alignment = TextAnchor.LowerCenter;
-        text.horizontalOverflow = HorizontalWrapMode.Overflow;
-        text.verticalOverflow = VerticalWrapMode.Overflow;
+        text.alignment = TextAlignmentOptions.Bottom;
+        text.textWrappingMode = TextWrappingModes.NoWrap;
+        text.overflowMode = TextOverflowModes.Overflow;
         text.raycastTarget = false;
-        Outline outline = obj.AddComponent<Outline>();
-        outline.effectColor = Color.black;
-        outline.effectDistance = new Vector2(2, -2);
+        //Black edge so it reads over any floor
+        text.outlineWidth = 0.25f;
+        text.outlineColor = Color.black;
+        typewriter = GameFont.Animate(text);
         RectTransform r = text.rectTransform;
         r.anchorMin = r.anchorMax = new Vector2(0.5f, 0.5f);
         r.pivot = new Vector2(0.5f, 0f);

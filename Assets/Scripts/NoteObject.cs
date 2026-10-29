@@ -58,7 +58,7 @@ public class NoteObject : Interactable
         if(ModalUI.Instance == null) return;
         reading = true;
         hasBeenRead = true;
-        SFXManager.Instance.PlaySFX("note");
+        SFXManager.Play("note");
         if(lore != LoreNote.None) ReadNotes.Add(lore);
         //The game keeps going while you read: you stand still, the monster doesn't
         ModalUI.Instance.Open(this, title, this.body, image, "[F] Close", false);

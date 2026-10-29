@@ -12,10 +12,20 @@ public class ExitDoor : Interactable
     public Sprite openSprite;
 
     [Header("Exit cutscene (file names in Assets/StreamingAssets)")]
-    public string capturedVideo = "Captured.mp4";
-    public string reunionVideo = "Reunion.mp4";
+    public string capturedVideo = "Grabbed_Final.mp4";
+    public string reunionVideo = "Embrace_FInal.mp4";
     public string runChoice = "Break free and run";
-    public string embraceChoice = "Embrace her";
+    [Tooltip("Embrace option before all six papers are read (you don't know what she is yet)")]
+    public string embraceItChoice = "Embrace it";
+    [Tooltip("Embrace option once all six papers are read")]
+    public string embraceHerChoice = "Embrace her";
+    string EmbraceChoice => NoteObject.ReadAllStoryNotes ? embraceHerChoice : embraceItChoice;
+    [Tooltip("Dark edges round the choice (0 = none, 1 = black corners)")]
+    [Range(0f, 1f)] public float choiceVignette = 0.9f;
+    //Seconds the vignette takes to close in
+    public float choiceVignetteFade = 0.6f;
+    //Seconds to fade in from black after the Embrace video (you're in her body by then)
+    public float embraceFadeIn = 2f;
 
     private bool running;
 
@@ -93,10 +103,18 @@ public class ExitDoor : Interactable
         {
             yield return CutscenePlayer.Play(reunionVideo, CutscenePlayer.AnySkipKey, null);
         }
-        Time.timeScale = oldScale > 0f ? oldScale : 1f;
-        running = false;
+        //Straight to black as the video ends, swap into her behind it, then fade back in
+        BlackScreenUI black = GameManager.Get<BlackScreenUI>();
+        if(black != null)
+        {
+            black.SetText("", "");
+            yield return black.FadeIn(0f);
+        }
         DaughterTransfer transfer = GameManager.Get<DaughterTransfer>();
         if(transfer != null) transfer.Embrace(body);
+        if(black != null) yield return black.FadeOut(embraceFadeIn);
+        Time.timeScale = oldScale > 0f ? oldScale : 1f;
+        running = false;
     }
 
     //Two options at the bottom of the screen: [<-]/[->] to pick, [F]/[Enter] to confirm. Real time (the game is paused)
@@ -110,8 +128,19 @@ public class ExitDoor : Interactable
         CanvasScaler scaler = canvasObj.AddComponent<CanvasScaler>();
         scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         scaler.referenceResolution = new Vector2(1280, 720);
+        //Vignette first so the options draw over it
+        RawImage vignette = new GameObject("Vignette").AddComponent<RawImage>();
+        vignette.transform.SetParent(canvasObj.transform, false);
+        vignette.texture = PlayerHUD.MakeVignetteTexture();
+        vignette.raycastTarget = false;
+        vignette.color = new Color(0f, 0f, 0f, 0f);
+        RectTransform vr = vignette.rectTransform;
+        vr.anchorMin = Vector2.zero;
+        vr.anchorMax = Vector2.one;
+        vr.offsetMin = vr.offsetMax = Vector2.zero;
+        float vignetteAge = 0f;
         Text left = ChoiceText(canvasObj.transform, runChoice, new Vector2(-220f, 90f));
-        Text right = ChoiceText(canvasObj.transform, embraceChoice, new Vector2(220f, 90f));
+        Text right = ChoiceText(canvasObj.transform, EmbraceChoice, new Vector2(220f, 90f));
         Text hint = ChoiceText(canvasObj.transform, "[<- ->] choose   [F] confirm", new Vector2(0f, 40f));
         hint.fontSize = 20;
 
@@ -120,10 +149,12 @@ public class ExitDoor : Interactable
         yield return null;
         while(true)
         {
+            vignetteAge += Time.unscaledDeltaTime;
+            vignette.color = new Color(0f, 0f, 0f, choiceVignette * Mathf.Clamp01(vignetteAge / Mathf.Max(0.01f, choiceVignetteFade)));
             if(Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.A)) embrace = false;
             if(Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.D)) embrace = true;
             left.text = (!embrace ? "> " : "  ") + runChoice + (!embrace ? " <" : "  ");
-            right.text = (embrace ? "> " : "  ") + embraceChoice + (embrace ? " <" : "  ");
+            right.text = (embrace ? "> " : "  ") + EmbraceChoice + (embrace ? " <" : "  ");
             left.color = !embrace ? Color.white : new Color(1f, 1f, 1f, 0.45f);
             right.color = embrace ? Color.white : new Color(1f, 1f, 1f, 0.45f);
             if(Input.GetKeyDown(KeyCode.F) || Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space)) break;

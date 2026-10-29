@@ -123,7 +123,7 @@ public class PlayerHUD : MonoBehaviour
     {
         //Slots = empty hand + every item. Hidden while you carry nothing
         int count = inventory != null ? inventory.SlotCount : 0;
-        bool show = inventory != null && inventory.Items.Count > 0 && Time.timeScale > 0f;
+        bool show = inventory != null && inventory.Items.Count > 0 && Time.timeScale > 0f && !DaughterTransfer.Active;
         wheelGroup.alpha = show ? 1f : 0f;
         if(!show)
         {
@@ -205,7 +205,7 @@ public class PlayerHUD : MonoBehaviour
         string interact = interactor != null ? interactor.PromptLine(body) : null;
         if(interact != null) AddLine(interact);
         if(body.isHiding) return sb.ToString();
-        if(inventory != null)
+        if(inventory != null && !DaughterTransfer.Active)
         {
             ItemData held = inventory.SelectedItem;
             string key = $"[{inventory.useKey}] ";
@@ -306,7 +306,7 @@ public class PlayerHUD : MonoBehaviour
         vignette.enabled = c.a > 0.001f;
     }
 
-    static Texture2D MakeVignetteTexture()
+    public static Texture2D MakeVignetteTexture()
     {
         const int w = 64, h = 36;
         Texture2D tex = new Texture2D(w, h, TextureFormat.RGBA32, false);
@@ -605,6 +605,7 @@ public class PlayerHUD : MonoBehaviour
     void UpdateNoteCounter()
     {
         if(noteCounter == null) return;
+        noteCounter.enabled = Time.timeScale > 0f;
         int read = NoteObject.ReadNotes.Count;
         noteCounter.text = $"NOTES {read}/{NoteObject.StoryNoteCount}";
         //Gold once they're all read (the ending changes)

@@ -55,6 +55,10 @@ public class GameManager : MonoBehaviour
         Ensure<LoreTriggers>();
         Ensure<DaughterTransfer>();
         Ensure<DebugRoutes>();
+        Ensure<IntroVideo>();
+        Ensure<GameAudio>();
+        Ensure<PauseMenu>();
+        Ensure<GameFontApplier>();
 
         if(bodyManager == null) bodyManager = GetComponentInChildren<BodyManager>();
         if(sprint == null) sprint = GetComponentInChildren<PlayerSprint>();

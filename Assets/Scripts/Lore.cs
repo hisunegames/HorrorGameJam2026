@@ -76,7 +76,9 @@ public static class Lore
     public const string GeneratorStarts = "I'm getting out of here.";
     public static readonly string[] BodySwap = { "Ahhh.. F***", "Bloody hell" };
     public const string ResearcherKilled = "Loud a** b****.";
-    public const string TakeHerBody = "I can't let her out. Not like this.";
+    //Possession lines: "it" until all six papers are read and you know who she is, "her" after
+    static bool KnowsHer => NoteObject.ReadAllStoryNotes;
+    public static string TakeHerBody => KnowsHer ? "I can't let her out. Not like this." : "I can't let it out. Not like this.";
 
     //People running around while you're in her body (DaughterTransfer). Some only scream...
     public static readonly string[] NpcPanic =
@@ -98,7 +100,7 @@ public static class Lore
         "If the nuke went off, it would never get out. None of us would.",
         "The doctor had the arming codes. Only him!",
     };
-    public const string ExitAsDaughter = "No. She stays in here. We both do.";
+    public static string ExitAsDaughter => KnowsHer ? "No. She stays in here. We both do." : "No. It stays in here. We both do.";
 
     //Item asset name -> line when picking it up (anything else gets a random GainItem line)
     public static string PickupLine(ItemData item)
@@ -177,15 +179,22 @@ public static class Lore
     {
         "You throw the door open and run.\n\nThe cold hits first. Then the rifle.",
         "The body you stole drops into the snow, and whatever was left of you goes with it.\n\nNo more bodies. No more knowledge. Nothing.",
-        "Behind you, the door swings wide.\n\nSomething huge squeezes out into the night.\n\nWho knows where she goes now.",
+        "Behind you, the door swings wide.\n\nSomething huge squeezes out into the night.\n\nWho knows where it goes now.",
     };
 
     //Took her body instead of leaving, and let it take him (DaughterTransfer)
-    public static readonly string[] EndingKarma =
+    public static string[] EndingKarma => KnowsHer ? EndingKarmaHer : EndingKarmaIt;
+    static readonly string[] EndingKarmaHer =
     {
         "Maybe this is what you're owed.\n\nYou couldn't let her out. So you became her.",
         "Your own chemicals burn through every vein, every second.\n\nYour thoughts come apart one at a time, until there's nothing left that knows your name.",
         "The lab seals itself shut. She is locked away from the world forever, and you are locked inside her.\n\nYou did this.",
+    };
+    static readonly string[] EndingKarmaIt =
+    {
+        "Maybe this is what you're owed.\n\nYou couldn't let it out. So you became it.",
+        "Your own chemicals burn through every vein, every second.\n\nYour thoughts come apart one at a time, until there's nothing left that knows your name.",
+        "The lab seals itself shut. It is locked away from the world forever, and you are locked inside it.\n\nYou did this.",
     };
 
     //Run out the exit after reading all 6 papers

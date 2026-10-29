@@ -53,7 +53,7 @@ public class BodyDrag : MonoBehaviour
     void Update()
     {
         BodyScript body = bodyManager != null ? bodyManager.currentBody : null;
-        bool pressed = Input.GetKeyDown(dragKey) && Time.timeScale > 0f && !ModalUI.IsOpen;
+        bool pressed = Input.GetKeyDown(dragKey) && Time.timeScale > 0f && !ModalUI.IsOpen && !DaughterTransfer.Active;
         //Pressed again to drop it, or swapped / playing dead / hiding / the body stopped being draggable
         if(IsDragging && (pressed || body != dragger || body.isPlayingDead || body.isHiding || (Dragged != null && !Dragged.IsDraggable)))
         {

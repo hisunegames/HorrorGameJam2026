@@ -56,6 +56,7 @@ public class SalvageMachine : Interactable
     {
         worker = body;
         progress = 0f;
+        SFXManager.Play("salvage");
         if(salvageNoise > 0f) Noise.Make(transform.position, salvageNoise);
     }
 

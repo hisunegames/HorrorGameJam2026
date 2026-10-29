@@ -69,6 +69,8 @@ public static class CutscenePlayer
         player.targetTexture = target;
         screen.texture = target;
         screen.color = Color.white;
+        //Cutscene volume from the pause menu (video sound skips the AudioListener, so Master is in there too)
+        for(ushort track = 0; track < player.audioTrackCount; track++) player.SetDirectAudioVolume(track, GameAudio.CutsceneVolume);
         player.Play();
 
         //The key that started it shouldn't skip it

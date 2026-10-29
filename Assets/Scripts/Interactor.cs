@@ -55,6 +55,8 @@ public class Interactor : MonoBehaviour
                 foreach(var it in Interactable.All)
                 {
                     if(it == null || !it.isActiveAndEnabled) continue;
+                    //In her body: nothing to pick up, read or inspect, only the warhead (doors still work, RoomDoor)
+                    if(DaughterTransfer.Active && !(it is NukeTerminal)) continue;
                     float d = it.DistanceFrom(body);
                     if(d > it.Range || it.Prompt(body) == null) continue;
                     lit.Add(it);

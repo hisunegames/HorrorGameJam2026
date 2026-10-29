@@ -142,8 +142,9 @@ public class PlayerSprint : MonoBehaviour
 
     void PlayStep(CustomBodySO so)
     {
-        if(so == null || so.footstepSounds == null || so.footstepSounds.Length == 0) return;
-        AudioClip clip = so.footstepSounds[Random.Range(0, so.footstepSounds.Length)];
+        //The body's own steps if it has any, otherwise the shared one on the SFXManager
+        bool own = so != null && so.footstepSounds != null && so.footstepSounds.Length > 0;
+        AudioClip clip = own ? so.footstepSounds[Random.Range(0, so.footstepSounds.Length)] : SFXManager.Footstep;
         if(clip == null) return;
         if(stepSource == null)
         {

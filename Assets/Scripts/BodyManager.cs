@@ -132,6 +132,7 @@ public class BodyManager : MonoBehaviour
 
     void DoSwapBody(BodyScript currentBody, BodyScript targetBody)
     {
+        SFXManager.Play("bodyswap");
         currentBody.LeftOldBody();
 
         targetBody.ChangeToNewBody();
