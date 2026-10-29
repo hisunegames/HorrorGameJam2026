@@ -9,6 +9,9 @@ using UnityEngine.Video;
 //Runs on unscaled time, so the game can be paused behind it
 public static class CutscenePlayer
 {
+    //Seconds a video can sit on the same frame before it counts as frozen
+    const float StallTimeout = 3f;
+
     //A video left on its last frame (holdLastFrame), until Release()
     private static GameObject held;
     private static RenderTexture heldTexture;
@@ -75,7 +78,29 @@ public static class CutscenePlayer
 
         //The key that started it shouldn't skip it
         yield return null;
-        while(player.isPlaying && !(skipPressed != null && skipPressed())) yield return null;
+        //Some encodes stall (Windows decoder + non-baseline H.264) while still "playing", or never report the end:
+        //stop at the end ourselves, and give up if the picture stops moving for a few seconds
+        double lastTime = -1;
+        float stalled = 0f;
+        while(player.isPlaying && !(skipPressed != null && skipPressed()))
+        {
+            if(player.length > 0 && player.time >= player.length - 0.05) break;
+            if(player.time > lastTime + 0.0001)
+            {
+                lastTime = player.time;
+                stalled = 0f;
+            }
+            else
+            {
+                stalled += Time.unscaledDeltaTime;
+                if(stalled >= StallTimeout)
+                {
+                    Debug.LogWarning($"Video {file} stopped moving at {player.time:0.0}s of {player.length:0.0}s, carrying on");
+                    break;
+                }
+            }
+            yield return null;
+        }
         if(holdLastFrame)
         {
             //Paused on whatever frame it got to, still showing

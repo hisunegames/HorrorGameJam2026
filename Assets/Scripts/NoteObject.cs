@@ -19,13 +19,27 @@ public class NoteObject : Interactable
     public const int StoryNoteCount = 6;
     public static bool ReadAllStoryNotes => ReadNotes.Count >= StoryNoteCount;
 
+    //What each story paper said, to read again from the pause menu
+    public struct Entry
+    {
+        public string title;
+        public string body;
+        public Sprite image;
+    }
+    public static readonly Dictionary<LoreNote, Entry> ReadEntries = new Dictionary<LoreNote, Entry>();
+
     private bool reading;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     static void ResetStatics()
     {
         ReadNotes.Clear();
-        UnityEngine.SceneManagement.SceneManager.sceneLoaded += (scene, mode) => ReadNotes.Clear();
+        ReadEntries.Clear();
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded += (scene, mode) =>
+        {
+            ReadNotes.Clear();
+            ReadEntries.Clear();
+        };
     }
 
     void Reset()
@@ -59,7 +73,11 @@ public class NoteObject : Interactable
         reading = true;
         hasBeenRead = true;
         SFXManager.Play("note");
-        if(lore != LoreNote.None) ReadNotes.Add(lore);
+        if(lore != LoreNote.None)
+        {
+            ReadNotes.Add(lore);
+            ReadEntries[lore] = new Entry { title = title, body = this.body, image = image };
+        }
         //The game keeps going while you read: you stand still, the monster doesn't
         ModalUI.Instance.Open(this, title, this.body, image, "[F] Close", false);
     }

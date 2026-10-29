@@ -19,6 +19,8 @@ public class RoomDoor : MonoBehaviour
     public Vector2 inwardDirection = Vector2.down;
     //How far inside the room you appear
     public float exitDistance = 0.9f;
+    [Tooltip("Extra room around the door's box that still counts as standing at it (so being a bit off to the side works)")]
+    public float usePadding = 0.45f;
     [Header("Transition")]
     //Optional, found automatically. Without one the move is instant
     public BlackScreenUI blackScreen;
@@ -122,7 +124,8 @@ public class RoomDoor : MonoBehaviour
     BodyScript CurrentBodyAtDoor()
     {
         Bounds b = trigger.bounds;
-        foreach(var hit in Physics2D.OverlapBoxAll(b.center, b.size, 0f))
+        Vector2 size = (Vector2)b.size + Vector2.one * (usePadding * 2f);
+        foreach(var hit in Physics2D.OverlapBoxAll(b.center, size, 0f))
         {
             BodyScript body = hit.GetComponent<BodyScript>();
             if(body != null && body.isCurrentBody) return body;

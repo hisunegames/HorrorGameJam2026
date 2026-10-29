@@ -7,6 +7,8 @@ public class BodyFacing : MonoBehaviour
     public Sprite frontSprite; //down
     public Sprite backSprite;  //up
     public Sprite sideSprite;  //right
+    [Tooltip("The side art faces left instead of right (the Amalgam's)")]
+    public bool sideFacesLeft = false;
     public float minSpeed = 0.1f;
 
     private SpriteRenderer sr;
@@ -27,7 +29,7 @@ public class BodyFacing : MonoBehaviour
 
         if(Mathf.Abs(velocity.x) > Mathf.Abs(velocity.y))
         {
-            SetSprite(sideSprite, velocity.x < 0f);
+            SetSprite(sideSprite, sideFacesLeft ? velocity.x > 0f : velocity.x < 0f);
         }
         else
         {

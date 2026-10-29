@@ -18,7 +18,11 @@ public class RadioLure : MonoBehaviour
     {
         GameObject obj = new GameObject(item.itemName + " (on)");
         obj.transform.position = position;
-        SpriteRenderer sr = obj.AddComponent<SpriteRenderer>();
+        //Sprite on a child so the "on" shake moves only the picture, not the radio (the root's local position is
+        //its world position)
+        GameObject art = new GameObject("Sprite");
+        art.transform.SetParent(obj.transform, false);
+        SpriteRenderer sr = art.AddComponent<SpriteRenderer>();
         sr.sprite = item.worldSprite;
         if(SortingLayer.NameToID("Prop") != 0) sr.sortingLayerName = "Prop";
         sr.sortingOrder = 5;

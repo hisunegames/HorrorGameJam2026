@@ -59,6 +59,7 @@ public class GameManager : MonoBehaviour
         Ensure<GameAudio>();
         Ensure<PauseMenu>();
         Ensure<GameFontApplier>();
+        Ensure<GameBloom>();
 
         if(bodyManager == null) bodyManager = GetComponentInChildren<BodyManager>();
         if(sprint == null) sprint = GetComponentInChildren<PlayerSprint>();

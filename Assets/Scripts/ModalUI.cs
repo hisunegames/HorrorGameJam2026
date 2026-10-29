@@ -68,8 +68,13 @@ public class ModalUI : MonoBehaviour
         picture.sprite = image;
         picture.enabled = image != null;
         if(image != null) picture.preserveAspect = true;
-        //Text goes under the picture when there is one
-        bodyText.rectTransform.anchorMax = new Vector2(0.93f, image != null ? 0.43f : 0.84f);
+        //With a picture: picture on the left, text beside it on the right. Without: text across the panel
+        bool hasText = !string.IsNullOrEmpty(body);
+        RectTransform pr = picture.rectTransform;
+        pr.anchorMin = image != null && hasText ? new Vector2(0.04f, 0.12f) : new Vector2(0.25f, 0.12f);
+        pr.anchorMax = image != null && hasText ? new Vector2(0.48f, 0.84f) : new Vector2(0.75f, 0.84f);
+        bodyText.rectTransform.anchorMin = new Vector2(image != null ? 0.51f : 0.07f, 0.12f);
+        bodyText.rectTransform.anchorMax = new Vector2(0.95f, 0.84f);
         SetChoices(null);
     }
 

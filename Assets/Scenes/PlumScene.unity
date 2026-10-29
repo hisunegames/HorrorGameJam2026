@@ -6011,7 +6011,7 @@ MonoBehaviour:
   salvageTime: 2
   salvageNoise: 0.6
   dropNote: 5
-  noteImage: {fileID: 0}
+  noteImage: {fileID: 21300000, guid: 2ccf465f72bea9e41962a66c395e7d4e, type: 3}
   noteWorldSprite: {fileID: 21300000, guid: cee4f61b82382c1468c3e687957feaac, type: 3}
   dropOffset: {x: 0, y: -1}
   salvagedSprite: {fileID: 0}
@@ -10746,7 +10746,7 @@ MonoBehaviour:
   salvageTime: 2
   salvageNoise: 0.6
   dropNote: 5
-  noteImage: {fileID: 0}
+  noteImage: {fileID: 21300000, guid: 2ccf465f72bea9e41962a66c395e7d4e, type: 3}
   noteWorldSprite: {fileID: 21300000, guid: cee4f61b82382c1468c3e687957feaac, type: 3}
   dropOffset: {x: 0, y: -1}
   salvagedSprite: {fileID: 0}
@@ -74393,7 +74393,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameOverScreen
   blackScreen: {fileID: 1861801602}
   deathTitle: YOU DIED
-  deathLine: 'The knowledge dies with you.
+  deathLine: '
 
 
     Press R to try again'
@@ -82631,7 +82631,7 @@ MonoBehaviour:
   salvageTime: 2
   salvageNoise: 0.6
   dropNote: 5
-  noteImage: {fileID: 0}
+  noteImage: {fileID: 21300000, guid: 2ccf465f72bea9e41962a66c395e7d4e, type: 3}
   noteWorldSprite: {fileID: 21300000, guid: cee4f61b82382c1468c3e687957feaac, type: 3}
   dropOffset: {x: 0, y: -1}
   salvagedSprite: {fileID: 0}

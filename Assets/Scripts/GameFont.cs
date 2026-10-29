@@ -22,7 +22,17 @@ public static class GameFont
     //TextMeshPro
     public static TMP_FontAsset GetTMP()
     {
-        if(tmpFont == null) tmpFont = Resources.Load<TMP_FontAsset>(FontPath + " SDF");
+        if(tmpFont == null)
+        {
+            tmpFont = Resources.Load<TMP_FontAsset>(FontPath + " SDF");
+            //VCR has no Russian letters: those come from TMP's LiberationSans (dynamic, so any character works)
+            TMP_FontAsset fallback = Resources.Load<TMP_FontAsset>("Fonts & Materials/LiberationSans SDF - Fallback");
+            if(tmpFont != null && fallback != null)
+            {
+                if(tmpFont.fallbackFontAssetTable == null) tmpFont.fallbackFontAssetTable = new System.Collections.Generic.List<TMP_FontAsset>();
+                if(!tmpFont.fallbackFontAssetTable.Contains(fallback)) tmpFont.fallbackFontAssetTable.Add(fallback);
+            }
+        }
         return tmpFont;
     }
 

@@ -220,7 +220,7 @@ public class SmallMonster : MonoBehaviour
         if(sr != null)
         {
             sr.color = deadColor;
-            sr.transform.localPosition = spriteRest;
+            if(sr.transform != transform) sr.transform.localPosition = spriteRest;
             sr.flipY = true;
         }
         Debug.Log("Small monster killed", this);

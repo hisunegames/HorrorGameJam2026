@@ -15,6 +15,10 @@ public class DaughterTransfer : MonoBehaviour
     public float transferRange = 2f;
     //Seconds as her until everything goes black
     public float madnessTime = 45f;
+    [Tooltip("Seconds instead, when all six papers are read (the true ending is possible: time to reach the warhead)")]
+    public float madnessTimeAllNotes = 75f;
+    //Picked when you take her body
+    float MadnessTime => NoteObject.ReadAllStoryNotes ? madnessTimeAllNotes : madnessTime;
     //Her walking speed once she's yours
     public float daughterSpeed = 3.2f;
     [Tooltip("Also let the player take her body by walking up to her and pressing E (normally it's the Embrace choice at the exit)")]
@@ -117,6 +121,16 @@ public class DaughterTransfer : MonoBehaviour
             col.radius = 0.4f;
             col.offset = new Vector2(0f, 0.4f);
         }
+        //Turns to face where you walk, like the other bodies: side art (it faces left) or the front one
+        if(her.spriteRenderer != null && go.GetComponent<BodyFacing>() == null)
+        {
+            BodyFacing facing = go.AddComponent<BodyFacing>();
+            facing.frontSprite = her.normalSprite;
+            facing.backSprite = her.normalSprite;
+            facing.sideSprite = her.sideSprite != null ? her.sideSprite : her.normalSprite;
+            facing.sideFacesLeft = true;
+        }
+
         CustomBodySO so = ScriptableObject.CreateInstance<CustomBodySO>();
         so.name = "Daughter";
         so.moveSpeed = daughterSpeed / Mathf.Max(0.01f, GameManager.PlayerSpeedMultiplier);
@@ -137,7 +151,7 @@ public class DaughterTransfer : MonoBehaviour
     {
         if(ended || Time.timeScale == 0f) return;
         KillTouchedNpcs();
-        Madness01 = Mathf.Clamp01(Madness01 + Time.deltaTime / Mathf.Max(1f, madnessTime));
+        Madness01 = Mathf.Clamp01(Madness01 + Time.deltaTime / Mathf.Max(1f, MadnessTime));
         //The clear middle shrinks, then it all goes black. Zooming the texture out (UV rect) shrinks the hole while the
         //image stays full screen; the texture clamps, so everything past its edge is solid black
         float zoom = Mathf.Lerp(0.4f, 2.8f, Madness01);

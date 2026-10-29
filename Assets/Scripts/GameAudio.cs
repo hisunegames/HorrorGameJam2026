@@ -13,6 +13,8 @@ public class GameAudio : MonoBehaviour
 
     //Volume each source started with, so the setting scales it instead of overwriting it
     private readonly Dictionary<AudioSource, float> baseVolume = new Dictionary<AudioSource, float>();
+    //Sources that set their own volume (fades): they multiply in the SFX setting themselves, left alone here
+    public static readonly HashSet<AudioSource> SelfManaged = new HashSet<AudioSource>();
     private float scanTimer;
 
     public static float Get(Channel channel)
@@ -55,6 +57,7 @@ public class GameAudio : MonoBehaviour
         AudioListener.volume = volumes[(int)Channel.Master];
         foreach(AudioSource source in FindObjectsByType<AudioSource>(FindObjectsSortMode.None))
         {
+            if(SelfManaged.Contains(source)) continue;
             if(!baseVolume.TryGetValue(source, out float start))
             {
                 start = source.volume;

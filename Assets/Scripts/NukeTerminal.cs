@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Text;
 using UnityEngine;
 
@@ -13,6 +14,13 @@ public class NukeTerminal : Interactable
     public float timeLimit = 6f;
     public float countdown = 10f;
     [TextArea] public string deathText = "The warhead detonated.";
+    [Header("Detonation")]
+    //Seconds of fire and white-out before the ending / death screen
+    public float explosionTime = 1.6f;
+    //Seconds the explosion sound takes to fade away once the ending starts
+    public float explosionFadeOut = 1f;
+    public Color fireColor = new Color(1f, 0.55f, 0.15f);
+    public Color coreColor = new Color(1f, 0.95f, 0.8f);
 
     private enum State { Idle, Entering, Armed }
     private State state = State.Idle;
@@ -101,20 +109,69 @@ public class NukeTerminal : Interactable
         done = true;
         timer = countdown;
         ModalUI.Instance.Close(this);
+        SFXManager.Alarm(true);
         OnArmed?.Invoke();
     }
 
     void UpdateArmed()
     {
+        //Caught during the countdown: no more alarm over the death screen
+        if(Enemy.PlayerDied)
+        {
+            state = State.Idle;
+            ModalUI.Instance.SetAlarm(false);
+            SFXManager.Alarm(false);
+            return;
+        }
         timer -= Time.deltaTime;
         if(Time.timeScale > 0f) ModalUI.Instance.SetAlarm(true, $"DETONATION IN {Mathf.CeilToInt(Mathf.Max(0f, timer))}");
         if(timer > 0f) return;
         state = State.Idle;
         ModalUI.Instance.SetAlarm(false);
+        SFXManager.Alarm(false);
+        StartCoroutine(Detonate());
+    }
+
+    //Boom: fire and sparks from the warhead, the screen whites out, then the ending
+    IEnumerator Detonate()
+    {
+        SFXManager.Explosion();
+        Burst(coreColor, 60, 4f, 14f, 0.5f, 0.25f);
+        Burst(fireColor, 90, 2f, 9f, 1.1f, 0.35f);
+        Burst(new Color(0.25f, 0.2f, 0.2f), 50, 0.5f, 3f, 1.6f, 0.5f);
+        //Not fully white, so the fire still shows through
+        ScreenFlash.Play(0.75f, explosionTime + 0.4f);
+        yield return new WaitForSecondsRealtime(explosionTime);
         //In her body, sealing her in with you: the true ending. Any other time it's just a death
         GameOverScreen end = GameManager.Get<GameOverScreen>();
         if(DaughterTransfer.Active && end != null) end.ShowEnding("TRUE ENDING", Lore.EndingTrue);
         else Enemy.KillPlayer(deathText);
+        //Gone by the time the black screen and its text are up
+        SFXManager.FadeOutExplosion(explosionFadeOut);
+    }
+
+    //One ring of square particles flying out from the warhead
+    void Burst(Color color, int count, float minSpeed, float maxSpeed, float life, float size)
+    {
+        GameObject obj = new GameObject("Explosion");
+        obj.transform.position = transform.position;
+        ParticleSystem ps = Projectile.MakeSystem(obj, color);
+        var main = ps.main;
+        main.startLifetime = new ParticleSystem.MinMaxCurve(life * 0.6f, life);
+        main.startSpeed = new ParticleSystem.MinMaxCurve(minSpeed, maxSpeed);
+        main.startSize = new ParticleSystem.MinMaxCurve(size * 0.5f, size);
+        main.maxParticles = count;
+        //Unscaled: still flies if anything pauses
+        main.useUnscaledTime = true;
+        var shape = ps.shape;
+        shape.enabled = true;
+        shape.shapeType = ParticleSystemShapeType.Circle;
+        shape.radius = 0.3f;
+        var renderer = obj.GetComponent<ParticleSystemRenderer>();
+        //Over everything in the world
+        if(renderer != null) renderer.sortingOrder = 500;
+        ps.Emit(count);
+        Destroy(obj, life + 0.5f);
     }
 
     //Entered ones dimmed, the next one bracketed

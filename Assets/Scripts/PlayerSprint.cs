@@ -140,11 +140,22 @@ public class PlayerSprint : MonoBehaviour
         PlayStep(so);
     }
 
+    //The shared footsteps file cut into single steps (SFXManager), taken in turn
+    private int stepIndex;
+
+    AudioClip NextSharedStep()
+    {
+        AudioClip[] steps = SFXManager.FootstepSlices;
+        if(steps == null || steps.Length == 0) return null;
+        stepIndex = (stepIndex + 1) % steps.Length;
+        return steps[stepIndex];
+    }
+
     void PlayStep(CustomBodySO so)
     {
         //The body's own steps if it has any, otherwise the shared one on the SFXManager
         bool own = so != null && so.footstepSounds != null && so.footstepSounds.Length > 0;
-        AudioClip clip = own ? so.footstepSounds[Random.Range(0, so.footstepSounds.Length)] : SFXManager.Footstep;
+        AudioClip clip = own ? so.footstepSounds[Random.Range(0, so.footstepSounds.Length)] : NextSharedStep();
         if(clip == null) return;
         if(stepSource == null)
         {
@@ -153,6 +164,28 @@ public class PlayerSprint : MonoBehaviour
             stepSource.spatialBlend = 0f;
         }
         stepSource.pitch = Random.Range(0.9f, 1.1f);
+        //Couldn't be cut (WebGL can't read audio data): play a quarter of the whole file, one step's worth
+        if(!own && clip == SFXManager.Footstep)
+        {
+            float part = clip.length / 4f;
+            stepSource.Stop();
+            stepSource.clip = clip;
+            stepSource.time = part * (stepIndex % 4);
+            stepSource.Play();
+            stopStepAt = Time.unscaledTime + part / stepSource.pitch;
+            return;
+        }
         stepSource.PlayOneShot(clip, footstepVolume);
+    }
+
+    private float stopStepAt = -1f;
+
+    void LateUpdate()
+    {
+        if(stopStepAt > 0f && Time.unscaledTime >= stopStepAt)
+        {
+            stopStepAt = -1f;
+            if(stepSource != null) stepSource.Stop();
+        }
     }
 }
