@@ -1,6 +1,6 @@
 using UnityEngine;
 
-//Every note, line and ending in one place (from "Horror jam 2026 - Sorry, Daughter"). Edit the text here
+//Every note, line and ending in one place (from "Horror jam 2026 - Sorry, My Daughter"). Edit the text here
 public enum LoreNote { None, Note1_FakeDoor, Note2_ToolRoom, Note3_NukeRoom, Note4_Secret, Note5_Machine, Note6_DaughterCage }
 
 public static class Lore
@@ -218,5 +218,5 @@ public static class Lore
         "In her last moments, before everything went black, she still pictured a happy family.\n\nFather. Mother.\n\nWhy...",
     };
 
-    public const string Game = "SORRY, DAUGHTER";
+    public const string Game = "SORRY, MY DAUGHTER";
 }

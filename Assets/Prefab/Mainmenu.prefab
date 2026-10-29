@@ -1234,7 +1234,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Sorry, Daughter
+  m_text: Sorry, My Daughter
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 15f8cd81c895b4d4fb35511e7b1f8cc0, type: 2}
   m_sharedMaterial: {fileID: -6580984133971553811, guid: 15f8cd81c895b4d4fb35511e7b1f8cc0, type: 2}

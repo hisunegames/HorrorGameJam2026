@@ -53622,7 +53622,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IntroVideo
   videoFile: 
-  pressKeyTitle: SORRY, DAUGHTER
+  pressKeyTitle: SORRY, MY DAUGHTER
   pressKeyText: Press any key
   onlyOnFirstLoad: 1
 --- !u!114 &1942048020
