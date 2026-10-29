@@ -75,7 +75,7 @@ public static class CutscenePlayer
         //Cutscene volume from the pause menu (video sound skips the AudioListener, so Master is in there too)
         for(ushort track = 0; track < player.audioTrackCount; track++) player.SetDirectAudioVolume(track, GameAudio.CutsceneVolume);
         player.Play();
-
+        SoundManager.Instance.QueueMusic("Intro");
         //The key that started it shouldn't skip it
         yield return null;
         //Some encodes stall (Windows decoder + non-baseline H.264) while still "playing", or never report the end:

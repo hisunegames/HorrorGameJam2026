@@ -12,7 +12,7 @@ public class SoundManager : MonoBehaviour
     [SerializeField] AudioClip _chorusSong;
     [SerializeField] AudioClip _endSong;
 
-    public SoundManager Instance;
+    public static SoundManager Instance;
     public string curQueue = "";
     string Song = "";
     private void Awake()

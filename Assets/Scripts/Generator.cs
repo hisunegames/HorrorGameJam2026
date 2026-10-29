@@ -17,6 +17,8 @@ public class Generator : Interactable
     //Parts already put in (you can bring them one at a time)
     public bool hasBattery, hasParts, hasWire;
 
+    bool fixedOnce = false;
+
     void Reset()
     {
         range = 1.6f;
@@ -53,13 +55,19 @@ public class Generator : Interactable
         if(!hasBattery && inv.Remove(chargedBattery)) hasBattery = true;
         if(!hasParts && inv.Remove(spareParts)) hasParts = true;
         if(!hasWire && inv.Remove(wire)) hasWire = true;
-        if(!hasBattery || !hasParts || !hasWire) return;
+        if ((hasBattery || hasParts || hasWire) && !fixedOnce)
+        {
+            SoundManager.Instance.QueueMusic("Bridge");
+            fixedOnce = true;
+        }
 
+        if (!hasBattery || !hasParts || !hasWire) return;
         IsFixed = true;
         if(runningSprite != null) GetComponent<SpriteRenderer>().sprite = runningSprite;
         //It's loud
         if(startNoise > 0f) Noise.Make(transform.position, startNoise);
         Debug.Log("Generator running, exit open", this);
+        SoundManager.Instance.QueueMusic("End");
         SFXManager.Play("gen");
         SpeechBubble.Say(body.transform, Lore.GeneratorStarts, 3f);
         OnFixed?.Invoke();
