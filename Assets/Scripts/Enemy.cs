@@ -151,6 +151,11 @@ public class Enemy : MonoBehaviour
     public SpriteRenderer spriteRenderer;
     public Sprite normalSprite;
     public Sprite chaseSprite;
+    [Tooltip("Shown while walking left/right. The art faces LEFT; it's mirrored for walking right")]
+    public Sprite sideSprite;
+    [Tooltip("Side sprite while chasing (empty = Side Sprite)")]
+    public Sprite sideChaseSprite;
+    private bool showingSide;
     public AudioSource chaseAudio;
     public float chaseSpeedMultiplier = 1.5f;
     //Placeholder tint while there's no chase sprite yet
@@ -383,12 +388,7 @@ public class Enemy : MonoBehaviour
     {
         bool chasing = currentState == EnemyState.Chase || currentState == EnemyState.FollowDoor;
         agent.speed = chasing ? moveSpeed * chaseSpeedMultiplier : moveSpeed;
-        if(spriteRenderer != null)
-        {
-            Sprite sprite = chasing ? chaseSprite : normalSprite;
-            if(sprite != null) spriteRenderer.sprite = sprite;
-            spriteRenderer.color = chasing && chaseSprite == null ? placeholderChaseColor : normalColor;
-        }
+        UpdateSprite();
         if(chaseAudio != null)
         {
             if(chasing && !chaseAudio.isPlaying) chaseAudio.Play();
@@ -918,6 +918,26 @@ public class Enemy : MonoBehaviour
     {
         Vector3 v = agent != null ? agent.velocity : Vector3.zero;
         if(v.sqrMagnitude > 0.05f) facing = ((Vector2)v).normalized;
+        UpdateSprite();
+    }
+
+    //Front sprite, or the side one (mirrored for right) while it's mostly moving sideways
+    void UpdateSprite()
+    {
+        if(spriteRenderer == null) return;
+        bool chasing = currentState == EnemyState.Chase || currentState == EnemyState.FollowDoor;
+        //A bit of give either side of the diagonal so it doesn't flicker between the two
+        float x = Mathf.Abs(facing.x), y = Mathf.Abs(facing.y);
+        if(sideSprite == null) showingSide = false;
+        else if(x > y * 1.2f) showingSide = true;
+        else if(y > x * 1.2f) showingSide = false;
+
+        Sprite front = chasing ? chaseSprite : normalSprite;
+        Sprite side = chasing && sideChaseSprite != null ? sideChaseSprite : sideSprite;
+        Sprite sprite = showingSide ? side : front;
+        if(sprite != null) spriteRenderer.sprite = sprite;
+        spriteRenderer.flipX = showingSide && facing.x > 0f;
+        spriteRenderer.color = chasing && chaseSprite == null && !(showingSide && sideChaseSprite != null) ? placeholderChaseColor : normalColor;
     }
 
     //Translucent fan on the floor showing what it can see (pale normally, red while chasing, hidden when stunned)

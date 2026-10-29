@@ -54,6 +54,7 @@ public class GameManager : MonoBehaviour
         Ensure<NoiseIndicator>();
         Ensure<LoreTriggers>();
         Ensure<DaughterTransfer>();
+        Ensure<DebugRoutes>();
 
         if(bodyManager == null) bodyManager = GetComponentInChildren<BodyManager>();
         if(sprint == null) sprint = GetComponentInChildren<PlayerSprint>();

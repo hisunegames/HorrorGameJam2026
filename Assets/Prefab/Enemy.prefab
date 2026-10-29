@@ -12,6 +12,8 @@ GameObject:
   - component: {fileID: 3397212608847857911}
   - component: {fileID: 6064510233058645441}
   - component: {fileID: 547333557719886220}
+  - component: {fileID: 904189569850357660}
+  - component: {fileID: 5616965771458064843}
   m_Layer: 0
   m_Name: Enemy
   m_TagString: Untagged
@@ -116,6 +118,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 0
   invisibleWall: {fileID: 0}
+  wanderRooms: []
   wanderPoints:
   - {fileID: 0}
   - {fileID: 0}
@@ -125,6 +128,11 @@ MonoBehaviour:
   - {fileID: 0}
   wanderInterval: 5
   wanderCountTime: 0
+  wanderPause: {x: 1, y: 3}
+  strollDistance: {x: 2, y: 5}
+  roomStayTime: {x: 12, y: 25}
+  wanderJitter: 1.25
+  wanderMinSpeed: 0.7
   timeChecking: 5
   moveSpeed: 3
   trackDistance: 4
@@ -133,15 +141,25 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 0
   chaseLoseDistance: 16
+  viewAngle: 110
+  senseRadius: 1.2
+  showVisionCone: 1
+  coneColor: {r: 1, g: 1, b: 0.7, a: 0.18}
+  chaseConeColor: {r: 1, g: 0.15, b: 0.1, a: 0.25}
+  coneShader: {fileID: 4800000, guid: 743a8435a22f3d349b6fe61fdc04a4d5, type: 3}
+  bloodSmellRange: 6
   enemyKillRange: 0.5
   loseTargetDelay: 1.5
   reChaseCooldown: 2
   navSampleRadius: 1.5
   pathCheckInterval: 0.2
+  debugLogs: 1
   eatDuration: 3
   spriteRenderer: {fileID: 0}
   normalSprite: {fileID: 21300000, guid: 54e9c09176e3c8a4ba96ba8961be818a, type: 3}
   chaseSprite: {fileID: 21300000, guid: 77f63d5e76b19b94581663846483bbbd, type: 3}
+  sideSprite: {fileID: 21300000, guid: 7411941b6d576fb468f1c1925b13f39c, type: 3}
+  sideChaseSprite: {fileID: 21300000, guid: 7411941b6d576fb468f1c1925b13f39c, type: 3}
   chaseAudio: {fileID: 0}
   chaseSpeedMultiplier: 1.5
   placeholderChaseColor: {r: 1, g: 1, b: 1, a: 1}
@@ -149,6 +167,8 @@ MonoBehaviour:
   doorFollowDelay: 1
   doorReachDistance: 1
   doorChaseGrace: 5
+  doorMemory: 5
+  doorStuckTime: 4
   travelDoorPause: 0.5
   travelStuckTime: 10
 --- !u!195 &547333557719886220
@@ -173,3 +193,32 @@ NavMeshAgent:
   m_BaseOffset: 0.5
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
+--- !u!210 &904189569850357660
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4750800944402712538}
+  m_Enabled: 1
+  m_SortingLayerID: -2109013863
+  m_SortingLayer: 3
+  m_SortingOrder: 0
+  m_SortAtRoot: 0
+  m_Sort3DAs2D: 0
+--- !u!114 &5616965771458064843
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4750800944402712538}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9809bf1345abc5648af68b3a82653f08, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: NavMeshPlus::NavMeshPlus.Components.NavMeshModifier
+  m_OverrideArea: 0
+  m_Area: 0
+  m_IgnoreFromBuild: 1
+  m_AffectedAgents: ffffffff

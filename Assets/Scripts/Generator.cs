@@ -64,6 +64,16 @@ public class Generator : Interactable
         OnFixed?.Invoke();
     }
 
+    //Debug routes: running without the parts
+    public void DebugFix()
+    {
+        if(IsFixed) return;
+        hasBattery = hasParts = hasWire = true;
+        IsFixed = true;
+        if(runningSprite != null) GetComponent<SpriteRenderer>().sprite = runningSprite;
+        OnFixed?.Invoke();
+    }
+
     string Missing()
     {
         string s = "";

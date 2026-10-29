@@ -114,6 +114,7 @@ public class PlayerHUD : MonoBehaviour
         UpdateStaminaBar();
         UpdateNoiseMeter();
         UpdateInventory();
+        UpdateNoteCounter();
     }
 
     //Bottom left: "Bear Trap  > Knife (2) <  [<-  ->]". Placeholder until the real inventory UI
@@ -579,5 +580,34 @@ public class PlayerHUD : MonoBehaviour
         labelRect.pivot = new Vector2(1f, 0.5f);
         labelRect.anchoredPosition = new Vector2(-8f, 0f);
         labelRect.sizeDelta = new Vector2(90f, 10f);
+
+        //Top right: story papers read, "NOTES 2/6"
+        noteCounter = new GameObject("NoteCounter").AddComponent<Text>();
+        noteCounter.transform.SetParent(canvasObj.transform, false);
+        noteCounter.font = font;
+        noteCounter.fontSize = Mathf.RoundToInt(promptSize * 0.8f);
+        noteCounter.fontStyle = FontStyle.Bold;
+        noteCounter.color = textColor;
+        noteCounter.alignment = TextAnchor.UpperRight;
+        noteCounter.horizontalOverflow = HorizontalWrapMode.Overflow;
+        noteCounter.raycastTarget = false;
+        Outline noteOutline = noteCounter.gameObject.AddComponent<Outline>();
+        noteOutline.effectColor = Color.black;
+        noteOutline.effectDistance = new Vector2(2, -2);
+        RectTransform noteRect = noteCounter.rectTransform;
+        noteRect.anchorMin = noteRect.anchorMax = noteRect.pivot = new Vector2(1f, 1f);
+        noteRect.anchoredPosition = new Vector2(-40f, -40f);
+        noteRect.sizeDelta = new Vector2(240f, 40f);
+    }
+
+    private Text noteCounter;
+
+    void UpdateNoteCounter()
+    {
+        if(noteCounter == null) return;
+        int read = NoteObject.ReadNotes.Count;
+        noteCounter.text = $"NOTES {read}/{NoteObject.StoryNoteCount}";
+        //Gold once they're all read (the ending changes)
+        noteCounter.color = read >= NoteObject.StoryNoteCount ? new Color(1f, 0.85f, 0.3f) : textColor;
     }
 }
