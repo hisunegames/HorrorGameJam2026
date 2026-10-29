@@ -12,6 +12,8 @@ public class RoomDoor : MonoBehaviour
     public static event Action<BodyScript, RoomDoor, RoomDoor> OnBodyUsedDoor;
 
     public RoomDoor linkedDoor;
+    //Shortcut doors (from a room's "Shortcut" tilemap) need the unlock ability (Major) and the monster can't follow through them
+    public bool isShortcut = false;
     public KeyCode interactKey = KeyCode.F;
     //Points from the door into its own room
     public Vector2 inwardDirection = Vector2.down;
@@ -46,13 +48,14 @@ public class RoomDoor : MonoBehaviour
         if(!Input.GetKeyDown(interactKey)) return;
 
         BodyScript body = CurrentBodyAtDoor();
-        if(body == null) return;
+        if(body == null || body.isPlayingDead) return;
         if(linkedDoor == null)
         {
             string room = transform.parent != null ? transform.parent.name + "/" : "";
             Debug.LogWarning($"{room}{name} isn't linked to another door", this);
             return;
         }
+        if(IsLocked) return;
         StartCoroutine(GoThrough(body));
     }
 
@@ -64,9 +67,26 @@ public class RoomDoor : MonoBehaviour
         All.Add(this);
     }
 
+    //Standing at it (the prompt shows "Locked" instead of "Enter" if IsLocked)
     public bool IsUsableBy(BodyScript body)
     {
         return linkedDoor != null && body != null && CurrentBodyAtDoor() == body;
+    }
+
+    //Shortcut and the player hasn't got the unlock ability. Same check as LockedDoor (any of the kept abilities)
+    public bool IsLocked
+    {
+        get
+        {
+            if(!isShortcut) return false;
+            BodyManager bodyManager = GameManager.Get<BodyManager>();
+            if(bodyManager == null) return true;
+            foreach(var ability in bodyManager.activeAbilities)
+            {
+                if(ability != null && ability.canUnlockDoors) return false;
+            }
+            return true;
+        }
     }
 
     BodyScript CurrentBodyAtDoor()
@@ -98,6 +118,9 @@ public class RoomDoor : MonoBehaviour
         body.transform.position = to;
         //Cut the camera instead of panning across the gap between rooms
         CinemachineCore.OnTargetObjectWarped(body.transform, to - from);
+        //Whatever you're dragging comes through with you
+        BodyDrag drag = GameManager.Get<BodyDrag>();
+        if(drag != null) drag.CarryThrough(body, to, linkedDoor.inwardDirection);
         OnBodyUsedDoor?.Invoke(body, this, linkedDoor);
 
         if(blackScreen != null)
@@ -110,7 +133,7 @@ public class RoomDoor : MonoBehaviour
 
     void OnDrawGizmos()
     {
-        Gizmos.color = linkedDoor != null ? Color.green : Color.red;
+        Gizmos.color = linkedDoor == null ? Color.red : isShortcut ? new Color(1f, 0.6f, 0f) : Color.green;
         Gizmos.DrawWireSphere(ExitPoint, 0.2f);
         if(linkedDoor != null)
         {

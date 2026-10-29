@@ -11,8 +11,11 @@ GameObject:
   - component: {fileID: 3775095122811779853}
   - component: {fileID: 8249362757558893664}
   - component: {fileID: 4162285768261051900}
-  - component: {fileID: 5797808104770159826}
   - component: {fileID: 8220164048687647453}
+  - component: {fileID: -955460078811654081}
+  - component: {fileID: 2718613244286456497}
+  - component: {fileID: 8559971752328173790}
+  - component: {fileID: 7475115598262883204}
   m_Layer: 6
   m_Name: BlindGuy
   m_TagString: Player
@@ -84,8 +87,8 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 2
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
-  m_Color: {r: 1, g: 0.96657705, b: 0, a: 1}
+  m_Sprite: {fileID: 21300000, guid: 34a42d223e32d6042a53d42d3c0f1d6d, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -122,8 +125,61 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 1
   m_Constraints: 4
---- !u!58 &5797808104770159826
-CircleCollider2D:
+--- !u!114 &8220164048687647453
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8649384691106239954}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ba8c6066a119c848a7ca35694c4e497, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BodyScript
+  isCurrentBody: 0
+  isVacant: 0
+  isConsumed: 0
+  consumedColor: {r: 0.35, g: 0.05, b: 0.05, a: 1}
+  customBodySO: {fileID: 11400000, guid: 397be0dbf56162a47939dc390045d6ec, type: 2}
+  rb: {fileID: 4162285768261051900}
+  collapseAnimator: {fileID: 7475115598262883204}
+  speedMultiplier: 1
+  isPlayingDead: 0
+  dragMultiplier: 1
+  isHiding: 0
+  fingerTaken: 0
+--- !u!114 &-955460078811654081
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8649384691106239954}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a4322e0275b4c434eab34e16c14a4cf9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BodyFacing
+  frontSprite: {fileID: 21300000, guid: 34a42d223e32d6042a53d42d3c0f1d6d, type: 3}
+  backSprite: {fileID: 21300000, guid: d196aabcf49c11c44a47998cbb5c39d7, type: 3}
+  sideSprite: {fileID: 21300000, guid: 9501e1465461f7544aae9672e022067c, type: 3}
+  minSpeed: 0.1
+--- !u!210 &2718613244286456497
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8649384691106239954}
+  m_Enabled: 1
+  m_SortingLayerID: -2109013863
+  m_SortingLayer: 3
+  m_SortingOrder: 0
+  m_SortAtRoot: 0
+  m_Sort3DAs2D: 0
+--- !u!61 &8559971752328173790
+BoxCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -152,24 +208,41 @@ CircleCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 1
+  m_IsTrigger: 0
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
-  m_Radius: 1
---- !u!114 &8220164048687647453
-MonoBehaviour:
+  m_Offset: {x: 0, y: 0.375}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0.5, y: 0}
+    oldSize: {x: 0.5625, y: 0.75}
+    newSize: {x: 1, y: 1}
+    adaptiveTilingThreshold: 0.5
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Size: {x: 0.55, y: 0.85}
+  m_EdgeRadius: 0
+--- !u!95 &7475115598262883204
+Animator:
+  serializedVersion: 7
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8649384691106239954}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0ba8c6066a119c848a7ca35694c4e497, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BodyScript
-  isCurrentBody: 0
-  customBodySO: {fileID: 11400000, guid: 397be0dbf56162a47939dc390045d6ec, type: 2}
-  rb: {fileID: 4162285768261051900}
+  m_Enabled: 0
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: fefc8596ee2ec9d4882a3d62659ba10e, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0

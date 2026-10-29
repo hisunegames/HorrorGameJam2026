@@ -51,6 +51,9 @@ public class DialogueController : MonoBehaviour
 
     public void StartDialogue(string[] lines)
     {
+        //A new conversation cuts off one that's still typing (otherwise both type into the box at once)
+        StopAllCoroutines();
+        isTyping = false;
         index = 0;
         dialogueLines = lines;
         dialoguePanel.SetActive(true);

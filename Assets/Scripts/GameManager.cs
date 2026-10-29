@@ -10,6 +10,8 @@ public class GameManager : MonoBehaviour
     [Header("Player")]
     //Scales every body's moveSpeed. Lower = slower player
     public float playerSpeedMultiplier = 0.7f;
+    [Tooltip("The player walks over bodies and chairs (Body layer) instead of bumping into them, so you can stand on one in a puddle. They still hit walls when dragged")]
+    public bool walkOverBodies = true;
 
     [Header("Systems (found on this object if empty)")]
     public BodyManager bodyManager;
@@ -19,6 +21,11 @@ public class GameManager : MonoBehaviour
     public GameOverScreen gameOver;
     public SwapMemoryScreen swapScreen;
     public DialogueController dialogue;
+    public BodyFog fog;
+    public VibrationSense vibrationSense;
+    public PlayDead playDead;
+    public PlayerInventory inventory;
+    public BodyDrag bodyDrag;
 
     //Speed multiplier for bodies, 1 when there's no GameManager in the scene
     public static float PlayerSpeedMultiplier => Instance != null ? Instance.playerSpeedMultiplier : 1f;
@@ -31,6 +38,9 @@ public class GameManager : MonoBehaviour
             return;
         }
         Instance = this;
+        int bodyLayer = LayerMask.NameToLayer("Body");
+        int playerLayer = LayerMask.NameToLayer("Player");
+        if(bodyLayer >= 0 && playerLayer >= 0) Physics2D.IgnoreLayerCollision(bodyLayer, playerLayer, walkOverBodies);
 
         if(bodyManager == null) bodyManager = GetComponentInChildren<BodyManager>();
         if(sprint == null) sprint = GetComponentInChildren<PlayerSprint>();
@@ -39,6 +49,11 @@ public class GameManager : MonoBehaviour
         if(gameOver == null) gameOver = GetComponentInChildren<GameOverScreen>();
         if(swapScreen == null) swapScreen = GetComponentInChildren<SwapMemoryScreen>();
         if(dialogue == null) dialogue = GetComponentInChildren<DialogueController>();
+        if(fog == null) fog = GetComponentInChildren<BodyFog>();
+        if(vibrationSense == null) vibrationSense = GetComponentInChildren<VibrationSense>();
+        if(playDead == null) playDead = GetComponentInChildren<PlayDead>();
+        if(inventory == null) inventory = GetComponentInChildren<PlayerInventory>();
+        if(bodyDrag == null) bodyDrag = GetComponentInChildren<BodyDrag>();
     }
 
     void OnDestroy()

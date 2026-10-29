@@ -6,7 +6,43 @@ using UnityEngine.AI;
 public class Enemy : MonoBehaviour
 {
     public static event Action OnPlayerKilled;
-    public enum EnemyState {Wander , SoundTriggered , Chase , Return , Eat , FollowDoor}
+    //Why the player died this run (game over screen shows it). Empty = default line
+    public static string LastDeathCause { get; private set; } = "";
+    public static bool PlayerDied { get; private set; }
+
+    //Anything that kills the player calls this (monster, small monster, shock, nuke). Only the first one counts
+    public static void KillPlayer(string cause)
+    {
+        if(PlayerDied) return;
+        PlayerDied = true;
+        LastDeathCause = cause;
+        Debug.Log("Player died: " + cause);
+        OnPlayerKilled?.Invoke();
+    }
+
+    //New scene / restart
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    static void ResetStatics()
+    {
+        PlayerDied = false;
+        LastDeathCause = "";
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded += (scene, mode) =>
+        {
+            PlayerDied = false;
+            LastDeathCause = "";
+        };
+    }
+
+    static bool IsHidden(Transform t)
+    {
+        BodyScript body = t.GetComponent<BodyScript>();
+        return body != null && body.isHiding;
+    }
+    public enum EnemyState {Wander , SoundTriggered , Chase , Return , Eat , FollowDoor , Stunned}
+    public bool IsStunned => currentState == EnemyState.Stunned;
+    //Chasing this and can see it right now (lockers won't hide you then)
+    public bool IsChasing(Transform t) => currentState == EnemyState.Chase && target == t && targetInSight;
+    private float stunTimer;
     public EnemyState currentState = EnemyState.Wander;
     [Header("References")]
     [SerializeField] Transform target;
@@ -17,10 +53,28 @@ public class Enemy : MonoBehaviour
     public NavMeshObstacle invisibleWall;
 
     [Header("Wander Settings")]
+    [Tooltip("Room objects (Room1, Room5...) it roams around in. Used instead of Wander Points when set")]
+    public Transform[] wanderRooms;
     public Transform[] wanderPoints;
     private int currentPointsindex = 0;
+    //Gives up on a stroll / point after walking this long (stuck)
     public float wanderInterval = 5f;
     public float wanderCountTime;
+    [Tooltip("Stands around this long (random between x and y) after each stroll")]
+    public Vector2 wanderPause = new Vector2(1f, 3f);
+    [Tooltip("How far each stroll goes inside a room (random between x and y)")]
+    public Vector2 strollDistance = new Vector2(2f, 5f);
+    [Tooltip("Time spent in one room before heading to another wander room")]
+    public Vector2 roomStayTime = new Vector2(12f, 25f);
+    [Tooltip("Wander points: lands somewhere within this of the point instead of right on it")]
+    public float wanderJitter = 1.25f;
+    [Tooltip("Wander walking speed varies between this fraction and full Move Speed")]
+    [Range(0.3f, 1f)] public float wanderMinSpeed = 0.7f;
+    private Transform wanderRoom;
+    private float roomTimer;
+    private bool resting;
+    private float pauseTimer;
+    private Vector3 spawnPosition;
 
     [Header("Check Sound")]
     private bool isWaitingAtSound = false;
@@ -36,6 +90,9 @@ public class Enemy : MonoBehaviour
     [Tooltip("Optional: layers that block sight, e.g. walls. Empty = sees through everything in range")]
     public LayerMask sightBlockers;
     public float chaseLoseDistance = 12f;
+    [Tooltip("Smells blood from dragged bodies this far away and follows the trail")]
+    public float bloodSmellRange = 6f;
+    private float lastBloodTime = -1f;
     public float enemyKillRange = 0.5f;
     private Vector2 soundTargetPos;
 
@@ -44,6 +101,10 @@ public class Enemy : MonoBehaviour
     public float reChaseCooldown = 2f;
     public float navSampleRadius = 1.5f;
     public float pathCheckInterval = 0.2f;
+    [Tooltip("Logs what it's targeting and why it won't chase (turn off once things work)")]
+    public bool debugLogs = true;
+    private Transform loggedTarget;
+    private bool loggedReach = true;
     private float loseTimer;
     private float reChaseTimer;
     private float pathCheckTimer;
@@ -55,7 +116,8 @@ public class Enemy : MonoBehaviour
     [Header("Bait")]
     public float eatDuration = 3f;
     private float eatTimer;
-    private BodyScript eatingBody;
+    //A BodyScript or a corpse prop (DraggableProp)
+    private Component eatingBody;
 
     [Header("Chase Look")]
     public SpriteRenderer spriteRenderer;
@@ -77,11 +139,18 @@ public class Enemy : MonoBehaviour
     public float doorChaseGrace = 5f;
     private float doorGraceTimer;
     private Queue<RoomDoor> pendingDoors = new Queue<RoomDoor>();
-    //Doors to walk back through to get home, last one is in the current room
-    private List<RoomDoor> doorTrail = new List<RoomDoor>();
     private RoomDoor followDoor;
-    private bool returningThroughDoor;
     private float doorWaitTimer;
+
+    [Header("Travelling between rooms")]
+    [Tooltip("Wander points (and home) can be in other rooms: it walks there door by door, taking the door that leads closest each time")]
+    public float travelDoorPause = 0.5f;
+    //Warp through anyway if it can't reach a door in this long
+    public float travelStuckTime = 10f;
+    private Queue<RoomDoor> travelRoute = new Queue<RoomDoor>();
+    private Vector3 travelTarget;
+    private float travelDoorTimer;
+    private float travelStuckTimer;
 
     void OnEnable()
     {
@@ -98,8 +167,14 @@ public class Enemy : MonoBehaviour
     //Heard something: go check it out, unless busy or it's somewhere we can't walk to (another room)
     void HandleNoise(Vector2 position, float loudness)
     {
+        //Destroyed but still hooked to the static event (scene reload): unhook instead of throwing
+        if(this == null)
+        {
+            Noise.OnNoise -= HandleNoise;
+            return;
+        }
         if(playerDead || agent == null) return;
-        if(currentState == EnemyState.Chase || currentState == EnemyState.Eat || currentState == EnemyState.FollowDoor) return;
+        if(currentState == EnemyState.Chase || currentState == EnemyState.Eat || currentState == EnemyState.FollowDoor || currentState == EnemyState.Stunned) return;
         if(Vector2.Distance(transform.position, position) > hearingRange * loudness) return;
         if(!CanReachPoint(position)) return;
         SoundTrigger(position);
@@ -115,9 +190,11 @@ public class Enemy : MonoBehaviour
         pathCache = new NavMeshPath();
         //Empty slots in the list would throw, just skip them
         wanderPoints = wanderPoints == null ? new Transform[0] : Array.FindAll(wanderPoints, p => p != null);
-        if(wanderPoints.Length == 0)
+        wanderRooms = wanderRooms == null ? new Transform[0] : Array.FindAll(wanderRooms, r => r != null);
+        spawnPosition = transform.position;
+        if(wanderPoints.Length == 0 && wanderRooms.Length == 0)
         {
-            Debug.LogWarning("Enemy has no wander points, it will stand still until it sees or hears something", this);
+            Debug.LogWarning("Enemy has no wander rooms or points, it will stand still until it sees or hears something", this);
         }
         if(baitLayer == 0)
         {
@@ -136,18 +213,35 @@ public class Enemy : MonoBehaviour
     void Update()
     {
         if(playerDead) return;
-        if(Physics2D.OverlapCircle(transform.position, enemyKillRange, playerLayer) != null)
+        if(PlayerDied)
         {
             playerDead = true;
             agent.isStopped = true;
-            Debug.Log("Player ded.");
             if(chaseAudio != null) chaseAudio.Stop();
-            OnPlayerKilled?.Invoke();
             return;
+        }
+        Collider2D touching = Physics2D.OverlapCircle(transform.position, enemyKillRange, playerLayer);
+        //Can't get at you through a locker door
+        if(touching != null && !IsHidden(touching.transform))
+        {
+            playerDead = true;
+            agent.isStopped = true;
+            if(chaseAudio != null) chaseAudio.Stop();
+            KillPlayer("The thing that was your daughter caught you.");
+            return;
+        }
+        //Caught in a trap: stands there (still deadly up close), then heads home
+        if(currentState == EnemyState.Stunned)
+        {
+            stunTimer -= Time.deltaTime;
+            if(stunTimer > 0f) return;
+            agent.isStopped = false;
+            currentState = EnemyState.Return;
+            GoBackToStart();
         }
         if(currentState != EnemyState.Eat)
         {
-            BodyScript bait = BaitInRange();
+            Component bait = BaitInRange();
             if(bait != null)
             {
                 StartEating(bait);
@@ -165,12 +259,19 @@ public class Enemy : MonoBehaviour
             if(seen != null) target = seen;
             else if(!IsValidTarget(target)) target = null;
             cachedCanReach = CanReachPlayer();
+            if(debugLogs) LogTargetChanges();
+            //Nothing to chase: a fresh blood trail beats wandering
+            if(!targetInSight && (currentState == EnemyState.Wander || currentState == EnemyState.Return || currentState == EnemyState.SoundTriggered))
+            {
+                FollowBlood();
+            }
         }
 
         if(targetInSight && cachedCanReach && currentState != EnemyState.Chase && currentState != EnemyState.Eat && reChaseTimer <= 0f)
         {
             currentState = EnemyState.Chase;
             ClearDoorFollow();
+            StopTravel();
             isWaitingAtSound = false;
             loseTimer = 0f;
             agent.isStopped = false;
@@ -204,10 +305,37 @@ public class Enemy : MonoBehaviour
         }
     }
 
+    //Goes to the freshest blood it can smell that's newer than the last drop it checked, so it walks the trail
+    //towards wherever the body was dragged
+    void FollowBlood()
+    {
+        BloodTrail.Drop drop = BloodTrail.FreshestNear(transform.position, bloodSmellRange, lastBloodTime);
+        if(drop == null || !CanReachPoint(drop.position)) return;
+        lastBloodTime = drop.time;
+        if(debugLogs && currentState != EnemyState.SoundTriggered) Debug.Log("Enemy: found a blood trail", this);
+        SoundTrigger(drop.position);
+    }
+
+    //Set off a trap (ArmedTrap): stuck in place for a while, forgets what it was doing
+    public void Stun(float seconds)
+    {
+        if(playerDead) return;
+        StopTravel();
+        ClearDoorFollow();
+        eatingBody = null;
+        isWaitingAtSound = false;
+        currentState = EnemyState.Stunned;
+        stunTimer = seconds;
+        agent.isStopped = true;
+        agent.velocity = Vector3.zero;
+        lastState = currentState;
+        ApplyStateLook();
+    }
+
     //Sprite, crying audio and speed all switch the moment the chase starts
     void ApplyStateLook()
     {
-        bool chasing = currentState == EnemyState.Chase || (currentState == EnemyState.FollowDoor && !returningThroughDoor);
+        bool chasing = currentState == EnemyState.Chase || currentState == EnemyState.FollowDoor;
         agent.speed = chasing ? moveSpeed * chaseSpeedMultiplier : moveSpeed;
         if(spriteRenderer != null)
         {
@@ -224,14 +352,177 @@ public class Enemy : MonoBehaviour
 
     void Wandering()
     {
+        //Still going through doors to another room; the wander timers start once it's in there
+        if(UpdateTravel()) return;
+        if(wanderRooms.Length > 0)
+        {
+            WanderRooms();
+            return;
+        }
         if(wanderPoints.Length == 0) return;
-        wanderCountTime += Time.deltaTime;
-        if(wanderCountTime >= wanderInterval||(!agent.pathPending && agent.remainingDistance < 0.1f))
+        if(!resting) wanderCountTime += Time.deltaTime;
+        if(ArrivedAndRested() || wanderCountTime >= wanderInterval)
         {
             currentPointsindex = (currentPointsindex+1)%wanderPoints.Length;
-            agent.SetDestination(wanderPoints[currentPointsindex].position);
+            Vector3 point = wanderPoints[currentPointsindex].position + (Vector3)(UnityEngine.Random.insideUnitCircle * wanderJitter);
+            SetWanderSpeed();
+            TravelTo(point);
             wanderCountTime = 0f;
         }
+    }
+
+    //Roams the wander rooms: short strolls with pauses inside one room, then moves on to another
+    void WanderRooms()
+    {
+        Transform here = RoomMap.RoomAt(transform.position);
+        if(!resting) wanderCountTime += Time.deltaTime;
+        bool legDone = ArrivedAndRested() || wanderCountTime >= wanderInterval;
+        roomTimer -= Time.deltaTime;
+
+        if(wanderRoom == null || (roomTimer <= 0f && legDone))
+        {
+            wanderRoom = PickWanderRoom(here);
+            roomTimer = UnityEngine.Random.Range(roomStayTime.x, roomStayTime.y);
+            if(wanderRoom != here)
+            {
+                SetWanderSpeed();
+                TravelTo(RandomPointIn(wanderRoom));
+                wanderCountTime = 0f;
+                return;
+            }
+        }
+        if(legDone)
+        {
+            SetWanderSpeed();
+            agent.isStopped = false;
+            agent.SetDestination(StrollPoint(wanderRoom));
+            wanderCountTime = 0f;
+        }
+    }
+
+    Transform PickWanderRoom(Transform current)
+    {
+        if(wanderRooms.Length == 1) return wanderRooms[0];
+        //Somewhere else if there's a choice
+        for(int i = 0; i < 6; i++)
+        {
+            Transform room = wanderRooms[UnityEngine.Random.Range(0, wanderRooms.Length)];
+            if(room != current) return room;
+        }
+        return wanderRooms[0];
+    }
+
+    //A spot a few steps away in some random direction, kept inside the room and reachable
+    Vector3 StrollPoint(Transform room)
+    {
+        Bounds bounds = default;
+        bool hasBounds = room != null && RoomMap.TryGetBounds(room, out bounds);
+        for(int i = 0; i < 8; i++)
+        {
+            Vector2 dir = UnityEngine.Random.insideUnitCircle.normalized;
+            Vector3 p = transform.position + (Vector3)(dir * UnityEngine.Random.Range(strollDistance.x, strollDistance.y));
+            if(hasBounds)
+            {
+                p.x = Mathf.Clamp(p.x, bounds.min.x + 1.5f, bounds.max.x - 1.5f);
+                p.y = Mathf.Clamp(p.y, bounds.min.y + 1.5f, bounds.max.y - 1.5f);
+            }
+            if(NavMesh.SamplePosition(p, out NavMeshHit hit, 1f, NavMesh.AllAreas) && CanReachPoint(hit.position)) return hit.position;
+        }
+        return RandomPointIn(room);
+    }
+
+    //Random floor spot anywhere in a room
+    Vector3 RandomPointIn(Transform room)
+    {
+        if(room == null || !RoomMap.TryGetBounds(room, out Bounds b)) return transform.position;
+        for(int i = 0; i < 10; i++)
+        {
+            Vector3 p = new Vector3(UnityEngine.Random.Range(b.min.x + 1.5f, b.max.x - 1.5f), UnityEngine.Random.Range(b.min.y + 1.5f, b.max.y - 1.5f), 0f);
+            if(NavMesh.SamplePosition(p, out NavMeshHit hit, 1f, NavMesh.AllAreas)) return hit.position;
+        }
+        return new Vector3(b.center.x, b.center.y, 0f);
+    }
+
+    //Reached the stroll target and stood around for a moment
+    bool ArrivedAndRested()
+    {
+        if(agent.pathPending || agent.remainingDistance > 0.15f)
+        {
+            resting = false;
+            return false;
+        }
+        if(!resting)
+        {
+            resting = true;
+            pauseTimer = UnityEngine.Random.Range(wanderPause.x, wanderPause.y);
+        }
+        pauseTimer -= Time.deltaTime;
+        if(pauseTimer > 0f) return false;
+        resting = false;
+        return true;
+    }
+
+    //Ambling, not marching: each stroll at a slightly different pace
+    void SetWanderSpeed()
+    {
+        agent.speed = moveSpeed * UnityEngine.Random.Range(wanderMinSpeed, 1f);
+    }
+
+    //Walk to a point, going through doors (greedy, nearest-to-target door each room) if it's in another room
+    void TravelTo(Vector3 point)
+    {
+        travelRoute.Clear();
+        travelTarget = point;
+        Transform here = RoomMap.RoomAt(transform.position);
+        Transform there = RoomMap.RoomAt(point);
+        if(here != null && there != null && here != there)
+        {
+            List<RoomDoor> route = RoomMap.GreedyRoute(here, there, point);
+            if(route != null) foreach(var door in route) travelRoute.Enqueue(door);
+            else Debug.LogWarning($"Enemy: no door route from {here.name} to {there.name}", this);
+        }
+        NextTravelLeg();
+    }
+
+    void NextTravelLeg()
+    {
+        travelDoorTimer = 0f;
+        travelStuckTimer = 0f;
+        agent.isStopped = false;
+        Vector3 dest = travelRoute.Count > 0 ? travelRoute.Peek().ExitPoint : travelTarget;
+        if(NavMesh.SamplePosition(dest, out NavMeshHit hit, navSampleRadius, NavMesh.AllAreas)) dest = hit.position;
+        agent.SetDestination(dest);
+    }
+
+    //True while there are still doors to go through
+    bool UpdateTravel()
+    {
+        if(travelRoute.Count == 0) return false;
+        RoomDoor door = travelRoute.Peek();
+        if(door == null || door.linkedDoor == null)
+        {
+            travelRoute.Clear();
+            NextTravelLeg();
+            return false;
+        }
+        travelStuckTimer += Time.deltaTime;
+        bool atDoor = Vector2.Distance(transform.position, door.ExitPoint) <= doorReachDistance;
+        if(!atDoor && travelStuckTimer < travelStuckTime) return true;
+
+        travelDoorTimer += Time.deltaTime;
+        if(travelDoorTimer < travelDoorPause) return true;
+        if(NavMesh.SamplePosition(door.linkedDoor.ExitPoint, out NavMeshHit hit, navSampleRadius, NavMesh.AllAreas))
+        {
+            agent.Warp(hit.position);
+        }
+        travelRoute.Dequeue();
+        NextTravelLeg();
+        return true;
+    }
+
+    void StopTravel()
+    {
+        travelRoute.Clear();
     }
 
     void Chasing()
@@ -253,12 +544,8 @@ public class Enemy : MonoBehaviour
         if(doorGraceTimer > 0f) doorGraceTimer -= Time.deltaTime;
         bool tooFar = distancetoPlayer > chaseLoseDistance && doorGraceTimer <= 0f;
         bool lostPlayer = tooFar || !cachedCanReach;
-        if(distancetoPlayer <= enemyKillRange)
-        {
-            Debug.Log("Player ded.");
-            //TODO Gameover
-            return;
-        }
+        //On top of it: the kill check / eating takes over
+        if(distancetoPlayer <= enemyKillRange) return;
         if(!lostPlayer && NavMesh.SamplePosition(target.position, out NavMeshHit hit, navSampleRadius, NavMesh.AllAreas))
         {
             agent.SetDestination(hit.position);
@@ -278,12 +565,13 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    void StartEating(BodyScript bait)
+    void StartEating(Component bait)
     {
         eatingBody = bait;
         eatTimer = 0f;
         currentState = EnemyState.Eat;
         ClearDoorFollow();
+        StopTravel();
         isWaitingAtSound = false;
         agent.isStopped = true;
         Debug.Log("Eating old body");
@@ -294,10 +582,8 @@ public class Enemy : MonoBehaviour
         eatTimer += Time.deltaTime;
         if(eatTimer >= eatDuration)
         {
-            if(eatingBody != null)
-            {
-                eatingBody.Consume();
-            }
+            if(eatingBody is BodyScript eatenBody) eatenBody.Consume();
+            else if(eatingBody is DraggableProp eatenProp) eatenProp.Consume();
             eatingBody = null;
             target = null;
             targetInSight = false;
@@ -307,37 +593,75 @@ public class Enemy : MonoBehaviour
         }
     }
 
+    //Back to its patch, wherever the chase ended up (goes through doors if needed):
+    //the room it's in if that's a wander room, else a random wander room, else the first wander point, else where it started
     void GoBackToStart()
     {
-        //In another room: walk back out through the doors we came in by first
-        if(doorTrail.Count > 0)
+        ClearDoorFollow();
+        if(wanderRooms.Length > 0)
         {
-            StartFollowDoor(doorTrail[doorTrail.Count - 1], true);
-            return;
+            Transform here = RoomMap.RoomAt(transform.position);
+            Transform room = Array.IndexOf(wanderRooms, here) >= 0 ? here : PickWanderRoom(here);
+            wanderRoom = room;
+            TravelTo(RandomPointIn(room));
         }
-        if(wanderPoints.Length > 0)
+        else if(wanderPoints.Length > 0)
         {
-            agent.SetDestination(wanderPoints[0].position);
+            TravelTo(wanderPoints[0].position);
+        }
+        else
+        {
+            TravelTo(spawnPosition);
         }
     }
 
     void HandleDoorUsed(BodyScript body, RoomDoor from, RoomDoor to)
     {
+        if(this == null)
+        {
+            RoomDoor.OnBodyUsedDoor -= HandleDoorUsed;
+            return;
+        }
         if(!followThroughDoors || target == null || body.transform != target) return;
-        if(currentState == EnemyState.FollowDoor && !returningThroughDoor)
+        if(currentState == EnemyState.FollowDoor)
         {
             //Already following, the player went through another door further on
-            pendingDoors.Enqueue(from);
+            if(!from.isShortcut)
+            {
+                pendingDoors.Enqueue(from);
+                return;
+            }
+            //Shortcut further on: queue the way round to where they came out
+            List<RoomDoor> detour = RoomMap.FindRoute(RoomMap.RoomOf(from), RoomMap.RoomOf(to));
+            if(detour != null) foreach(var door in detour) pendingDoors.Enqueue(door);
             return;
         }
         if(currentState != EnemyState.Chase) return;
-        StartFollowDoor(from, false);
+        if(!from.isShortcut)
+        {
+            StartFollowDoor(from);
+            return;
+        }
+
+        //Can't fit through the Major's shortcut: walk round through the normal doors to the room they came out in
+        Transform here = RoomMap.RoomAt(transform.position);
+        if(here == null) here = RoomMap.RoomOf(from);
+        List<RoomDoor> route = RoomMap.FindRoute(here, RoomMap.RoomOf(to));
+        if(route == null || route.Count == 0)
+        {
+            Debug.Log("Enemy: no way round to the shortcut, giving up", this);
+            return;
+        }
+        pendingDoors.Clear();
+        for(int i = 1; i < route.Count; i++) pendingDoors.Enqueue(route[i]);
+        StartFollowDoor(route[0]);
+        Debug.Log($"Enemy: player took a shortcut, going the long way ({route.Count} doors)", this);
     }
 
-    void StartFollowDoor(RoomDoor door, bool returning)
+    void StartFollowDoor(RoomDoor door)
     {
+        StopTravel();
         followDoor = door;
-        returningThroughDoor = returning;
         doorWaitTimer = 0f;
         currentState = EnemyState.FollowDoor;
         agent.isStopped = false;
@@ -376,18 +700,9 @@ public class Enemy : MonoBehaviour
             return;
         }
 
-        if(returningThroughDoor)
-        {
-            doorTrail.RemoveAt(doorTrail.Count - 1);
-            currentState = EnemyState.Return;
-            GoBackToStart();
-            return;
-        }
-
-        doorTrail.Add(through.linkedDoor);
         if(pendingDoors.Count > 0)
         {
-            StartFollowDoor(pendingDoors.Dequeue(), false);
+            StartFollowDoor(pendingDoors.Dequeue());
             return;
         }
         followDoor = null;
@@ -401,7 +716,6 @@ public class Enemy : MonoBehaviour
     {
         pendingDoors.Clear();
         followDoor = null;
-        returningThroughDoor = false;
     }
 
     public void SoundTrigger(Vector3 soundPos)
@@ -409,6 +723,7 @@ public class Enemy : MonoBehaviour
         soundTargetPos = soundPos;
         if(currentState != EnemyState.Chase)
         {
+            StopTravel();
             currentState = EnemyState.SoundTriggered;
             isWaitingAtSound = false;
             agent.isStopped = false;
@@ -440,15 +755,47 @@ public class Enemy : MonoBehaviour
 
     void ReturnBack()
     {
+        if(UpdateTravel()) return;
         if(!agent.pathPending && agent.remainingDistance < 0.2f)
         {
             currentState = EnemyState.Wander;
             wanderCountTime = 0f;
             currentPointsindex = 0;
+            //Linger in the room it came back to before roaming on
+            resting = false;
+            roomTimer = UnityEngine.Random.Range(roomStayTime.x, roomStayTime.y);
             if(invisibleWall != null)
             {
                 invisibleWall.enabled = true;
             }
+        }
+    }
+
+    //Only logs when something changes, so the Console doesn't flood
+    void LogTargetChanges()
+    {
+        if(target != loggedTarget)
+        {
+            loggedTarget = target;
+            loggedReach = true;
+            if(target == null) Debug.Log($"Enemy [{currentState}]: no target", this);
+            else
+            {
+                BodyScript body = target.GetComponent<BodyScript>();
+                string kind = body == null ? (target.GetComponent<DraggableProp>() != null ? "corpse prop bait" : "not a body?") : body.isCurrentBody ? "player" : body.IsBait ? "bait" : "unpossessed body?";
+                Debug.Log($"Enemy [{currentState}]: target {target.name} ({kind}), in sight {targetInSight}, reachable {cachedCanReach}", this);
+            }
+        }
+        if(target != null && cachedCanReach != loggedReach)
+        {
+            loggedReach = cachedCanReach;
+            if(!cachedCanReach)
+            {
+                bool onMesh = NavMesh.SamplePosition(target.position, out NavMeshHit hit, 1.5f, NavMesh.AllAreas);
+                string why = !onMesh ? "no NavMesh within 1.5 of it" : "NavMesh path from the enemy doesn't connect (other room / gap in the bake)";
+                Debug.LogWarning($"Enemy [{currentState}]: can't reach {target.name}: {why}", this);
+            }
+            else Debug.Log($"Enemy [{currentState}]: can reach {target.name} again", this);
         }
     }
 
@@ -476,17 +823,33 @@ public class Enemy : MonoBehaviour
     {
         if(t == null) return false;
         BodyScript body = t.GetComponent<BodyScript>();
-        if(body == null) return false;
-        return body.isCurrentBody || body.IsBait;
+        //Corpse prop that's been dragged around bleeding
+        if(body == null)
+        {
+            DraggableProp prop = t.GetComponent<DraggableProp>();
+            return prop != null && prop.IsBait;
+        }
+        //Playing dead / in a locker: not worth chasing (still dies if the enemy walks into it, see the kill check)
+        if(body.isCurrentBody) return !body.isPlayingDead && !body.isHiding;
+        return IsFood(body);
     }
 
-    BodyScript BaitInRange()
+    //Left-behind bodies, and prey (Researcher F) even with nobody in her
+    static bool IsFood(BodyScript body)
+    {
+        if(body.IsBait) return true;
+        return !body.isCurrentBody && !body.isConsumed && body.customBodySO != null && body.customBodySO.isPrey;
+    }
+
+    Component BaitInRange()
     {
         Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position,enemyKillRange,baitLayer);
         foreach(var hit in hits)
         {
             BodyScript body = hit.GetComponent<BodyScript>();
-            if(body != null && body.IsBait) return body;
+            if(body != null && IsFood(body)) return body;
+            DraggableProp prop = hit.GetComponent<DraggableProp>();
+            if(prop != null && prop.IsBait) return prop;
         }
         return null;
     }

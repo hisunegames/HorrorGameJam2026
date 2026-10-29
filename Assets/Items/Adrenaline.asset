@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aae4132a9c6de6f42967cc4f8228348e, type: 3}
+  m_Name: Adrenaline
+  m_EditorClassIdentifier: Assembly-CSharp::ItemData
+  itemName: Adrenaline
+  kind: 3
+  worldSprite: {fileID: 21300000, guid: 8f9cb11ff0bc59c4f896268f2bc70274, type: 3}
+  isTrap: 0
+  snappedSprite: {fileID: 0}
+  triggerRadius: 0.6
+  stunDuration: 5
+  snapNoise: 0
+  charges: 2
+  range: 1
+  ranged: 0
+  canCut: 1
+  weaponStun: 5
+  useNoise: 0
+  boostTime: 8
+  boostSpeed: 1.3
+  crashTime: 6
+  crashSpeed: 0.6

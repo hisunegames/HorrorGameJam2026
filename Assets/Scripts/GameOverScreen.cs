@@ -41,8 +41,23 @@ public class GameOverScreen : MonoBehaviour
 
     IEnumerator GameOverRoutine()
     {
+        //Whatever killed you (Enemy.KillPlayer) goes above the usual line
+        string cause = Enemy.LastDeathCause;
+        yield return EndRoutine(deathTitle, string.IsNullOrEmpty(cause) ? deathLine : cause + "\n\n" + deathLine);
+    }
+
+    //Any ending (escape, nuke...): black screen with text, R restarts
+    public void ShowEnd(string title, string body)
+    {
+        if(isGameOver) return;
+        isGameOver = true;
+        StartCoroutine(EndRoutine(title, body));
+    }
+
+    IEnumerator EndRoutine(string title, string body)
+    {
         Time.timeScale = 0f;
-        blackScreen.SetText(deathTitle, deathLine);
+        blackScreen.SetText(title, body);
         yield return blackScreen.FadeIn();
     }
 

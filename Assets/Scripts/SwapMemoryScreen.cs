@@ -58,6 +58,11 @@ public class SwapMemoryScreen : MonoBehaviour
 
     public bool IsNameComplete => revealedCount >= daughterName.Length;
 
+    //True when a swap will cover the screen in black (BodyScript then draws the fall on top of it)
+    public bool ShowsScreen => showScreen && isActiveAndEnabled && blackScreen != null;
+    //The black screen is up right now
+    public bool IsShowing { get; private set; }
+
     //"N A _ _ _"
     public string GetMaskedName()
     {
@@ -72,6 +77,7 @@ public class SwapMemoryScreen : MonoBehaviour
 
     IEnumerator ShowScreen(string memory)
     {
+        IsShowing = true;
         Time.timeScale = 0f;
         string body = memory;
         if(!string.IsNullOrEmpty(recurringLine))
@@ -83,5 +89,6 @@ public class SwapMemoryScreen : MonoBehaviour
         yield return new WaitForSecondsRealtime(holdTime);
         yield return blackScreen.FadeOut();
         Time.timeScale = 1f;
+        IsShowing = false;
     }
 }

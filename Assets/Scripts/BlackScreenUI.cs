@@ -16,6 +16,8 @@ public class BlackScreenUI : MonoBehaviour
     //Draw through the main camera so the CRT effect also distorts this screen
     public bool renderThroughCamera = true;
 
+    public const int CanvasSortingOrder = 32500;
+
     private CanvasGroup group;
     private Text titleText;
     private Text bodyText;
@@ -45,7 +47,10 @@ public class BlackScreenUI : MonoBehaviour
         {
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
         }
-        canvas.sortingOrder = 100;
+        //Topmost sorting layer, above the fog; bodies falling during the swap screen go just above this
+        SortingLayer[] layers = SortingLayer.layers;
+        if(layers.Length > 0) canvas.sortingLayerID = layers[layers.Length - 1].id;
+        canvas.sortingOrder = CanvasSortingOrder;
         CanvasScaler scaler = canvasObj.AddComponent<CanvasScaler>();
         scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         scaler.referenceResolution = new Vector2(1280, 720);

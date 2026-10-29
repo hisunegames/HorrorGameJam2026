@@ -16,7 +16,17 @@ public static class RoomDoorGenerator
         {"HorrorJam-Sheet_20", Vector2.up},    //bottom wall
         {"HorrorJam-Sheet_22", Vector2.down},  //top wall
     };
+    //Metal door sprites = shortcut doors (Major only, the monster walks around). Painted on the Wall tilemap like
+    //normal doors; which way they face is worked out from which wall of the room they're on
+    static readonly HashSet<string> ShortcutSprites = new HashSet<string>
+    {
+        "HorrorJam-Sheet_23", //top wall, front view
+        "HorrorJam-Sheet_24", //metal on the left edge
+        "HorrorJam-Sheet_25", //metal on the top edge
+        "HorrorJam-Sheet_26", //metal on the right edge
+    };
     const string DoorPrefix = "Door_";
+    const string ShortcutPrefix = "Shortcut_";
     //How far off-line two doors can be and still count as facing each other
     const float AlignTolerance = 1f;
     //Longest gap between two rooms' doors
@@ -27,10 +37,11 @@ public static class RoomDoorGenerator
     {
         foreach(var old in Object.FindObjectsByType<RoomDoor>(FindObjectsInactive.Include))
         {
-            if(old.name.StartsWith(DoorPrefix)) Undo.DestroyObjectImmediate(old.gameObject);
+            if(old.name.StartsWith(DoorPrefix) || old.name.StartsWith(ShortcutPrefix)) Undo.DestroyObjectImmediate(old.gameObject);
         }
 
         List<RoomDoor> doors = new List<RoomDoor>();
+        int shortcuts = 0;
         foreach(var tilemap in Object.FindObjectsByType<Tilemap>(FindObjectsInactive.Exclude))
         {
             Transform room = FindRoom(tilemap.transform);
@@ -38,8 +49,17 @@ public static class RoomDoorGenerator
             foreach(var cell in tilemap.cellBounds.allPositionsWithin)
             {
                 Sprite sprite = tilemap.GetSprite(cell);
-                if(sprite == null || !DoorSprites.TryGetValue(sprite.name, out Vector2 inward)) continue;
-                doors.Add(CreateDoor(room, tilemap.GetCellCenterWorld(cell), inward));
+                if(sprite == null) continue;
+                Vector3 pos = tilemap.GetCellCenterWorld(cell);
+                if(ShortcutSprites.Contains(sprite.name))
+                {
+                    doors.Add(CreateDoor(room, pos, InwardFromWall(room, pos), true));
+                    shortcuts++;
+                }
+                else if(DoorSprites.TryGetValue(sprite.name, out Vector2 inward))
+                {
+                    doors.Add(CreateDoor(room, pos, inward, false));
+                }
             }
         }
 
@@ -68,7 +88,27 @@ public static class RoomDoorGenerator
             Debug.LogWarning($"{door.transform.parent.name}/{door.name} has no door facing it", door);
         }
         if(doors.Count > 0) EditorSceneManager.MarkSceneDirty(doors[0].gameObject.scene);
-        Debug.Log($"Room doors: {doors.Count} made, {doors.Count - unlinked} linked, {unlinked} without a partner. Save the scene to keep them.");
+        Debug.Log($"Room doors: {doors.Count} made ({shortcuts} shortcut), {doors.Count - unlinked} linked, {unlinked} without a partner. Save the scene to keep them.");
+    }
+
+    //Door on the left edge of the room's walls points right into the room, and so on
+    static Vector2 InwardFromWall(Transform room, Vector3 pos)
+    {
+        Bounds b = default;
+        bool found = false;
+        foreach(var tilemap in room.GetComponentsInChildren<Tilemap>())
+        {
+            if(tilemap.name != "Wall" || !RoomMap.TryGetPaintedBounds(tilemap, out b)) continue;
+            found = true;
+            break;
+        }
+        if(!found) return Vector2.down;
+        float left = pos.x - b.min.x, right = b.max.x - pos.x, bottom = pos.y - b.min.y, top = b.max.y - pos.y;
+        float min = Mathf.Min(Mathf.Min(left, right), Mathf.Min(bottom, top));
+        if(min == left) return Vector2.right;
+        if(min == right) return Vector2.left;
+        if(min == bottom) return Vector2.up;
+        return Vector2.down;
     }
 
     static Transform FindRoom(Transform t)
@@ -81,10 +121,10 @@ public static class RoomDoorGenerator
         return null;
     }
 
-    static RoomDoor CreateDoor(Transform room, Vector3 position, Vector2 inward)
+    static RoomDoor CreateDoor(Transform room, Vector3 position, Vector2 inward, bool shortcut)
     {
         string side = inward == Vector2.right ? "Left" : inward == Vector2.left ? "Right" : inward == Vector2.up ? "Bottom" : "Top";
-        GameObject obj = new GameObject(DoorPrefix + side);
+        GameObject obj = new GameObject((shortcut ? ShortcutPrefix : DoorPrefix) + side);
         Undo.RegisterCreatedObjectUndo(obj, "Generate Room Doors");
         obj.transform.SetParent(room, true);
         obj.transform.position = position;
@@ -97,6 +137,7 @@ public static class RoomDoorGenerator
 
         RoomDoor door = obj.AddComponent<RoomDoor>();
         door.inwardDirection = inward;
+        door.isShortcut = shortcut;
         return door;
     }
 
@@ -104,6 +145,8 @@ public static class RoomDoorGenerator
     {
         dist = 0f;
         if(a.transform.parent == b.transform.parent) return false;
+        //Shortcuts only link to shortcuts
+        if(a.isShortcut != b.isShortcut) return false;
         if(Vector2.Dot(a.inwardDirection, b.inwardDirection) > -0.9f) return false;
 
         Vector2 delta = b.transform.position - a.transform.position;

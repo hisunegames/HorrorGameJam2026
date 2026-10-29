@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aae4132a9c6de6f42967cc4f8228348e, type: 3}
+  m_Name: BearTrap
+  m_EditorClassIdentifier: Assembly-CSharp::ItemData
+  itemName: Bear Trap
+  kind: 1
+  worldSprite: {fileID: -8135096131531685454, guid: 332f392729e21bb4c94c96e81c81e030, type: 3}
+  isTrap: 1
+  snappedSprite: {fileID: -3910538798510469132, guid: 332f392729e21bb4c94c96e81c81e030, type: 3}
+  triggerRadius: 0.6
+  stunDuration: 5
+  snapNoise: 0
+  charges: 2
+  range: 1
+  ranged: 0
+  canCut: 1
+  weaponStun: 5
+  useNoise: 0
+  boostTime: 8
+  boostSpeed: 1.3
+  crashTime: 6
+  crashSpeed: 0.6

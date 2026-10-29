@@ -45,6 +45,8 @@ public class BodyManager : MonoBehaviour
     {
         //Paused by swap screen or game over
         if (Time.timeScale == 0f) return;
+        //Lying still, no swapping or talking until you get up
+        if (currentBody != null && currentBody.isPlayingDead) return;
         if (Input.GetKeyDown(KeyCode.E))
         {
             TrySwapBody();

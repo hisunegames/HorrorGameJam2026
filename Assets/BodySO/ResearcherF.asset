@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6da4e4b50b90cda4e9215b3862e95b44, type: 3}
+  m_Name: ResearcherF
+  m_EditorClassIdentifier: Assembly-CSharp::CustomBodySO
+  sensesVibrations: 0
+  canPlayDead: 0
+  canUnlockDoors: 0
+  canSwim: 0
+  canCrawl: 0
+  rubberBoots: 0
+  hasFingerprint: 1
+  fingerItem: {fileID: 11400000, guid: eedfa3ca0e22b354b954a120badd7735, type: 2}
+  isPrey: 1
+  corpseSprite: {fileID: 21300000, guid: d6def8c4c7d332d42b1136f43940ee12, type: 3}
+  isNearsighted: 0
+  fogRadius: 2
+  isSlow: 0
+  slowSpeedMultiplier: 0.4
+  walkNoise: 0
+  sprintNoiseMultiplier: 1
+  footstepSounds: []
+  moveSpeed: 5
+  staminaMultiplier: 1

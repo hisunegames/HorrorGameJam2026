@@ -18,3 +18,5 @@ MonoBehaviour:
   isNearsighted: 1
   isSlow: 0
   moveSpeed: 5
+  sensesVibrations: 1
+  bleedsWhenDragged: 1

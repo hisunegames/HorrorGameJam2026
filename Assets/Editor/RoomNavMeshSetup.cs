@@ -35,7 +35,21 @@ public static class RoomNavMeshSetup
             modifier.area = area;
             EditorSceneManager.MarkSceneDirty(tilemap.gameObject.scene);
         }
-        Debug.Log($"Room NavMesh: {grounds} floors walkable, {walls} walls not walkable. Now press Bake on the NavMesh object and save the scene.");
+        //The surface collects every rendered sprite as walkable floor, so props, bodies and reference images
+        //(even mostly transparent ones) would add NavMesh in odd places. Only the room tilemaps should count
+        int ignored = 0;
+        foreach(var sr in Object.FindObjectsByType<SpriteRenderer>(FindObjectsInactive.Include))
+        {
+            NavMeshModifier modifier = sr.GetComponent<NavMeshModifier>();
+            if(modifier != null && modifier.ignoreFromBuild) continue;
+            if(modifier == null) modifier = Undo.AddComponent<NavMeshModifier>(sr.gameObject);
+            Undo.RecordObject(modifier, "Set Up Room NavMesh");
+            modifier.ignoreFromBuild = true;
+            PrefabUtility.RecordPrefabInstancePropertyModifications(modifier);
+            EditorSceneManager.MarkSceneDirty(sr.gameObject.scene);
+            ignored++;
+        }
+        Debug.Log($"Room NavMesh: {grounds} floors walkable, {walls} walls not walkable, {ignored} sprites left out of the bake. Now press Bake on the NavMesh object and save the scene.");
     }
 
     static bool InRoom(Transform t)

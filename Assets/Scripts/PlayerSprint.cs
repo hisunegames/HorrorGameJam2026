@@ -20,11 +20,33 @@ public class PlayerSprint : MonoBehaviour
     [Header("Noise")]
     public float noiseLoudness = 1f;
     public float noiseInterval = 0.35f;
+    //Walking steps are slower than running ones (only matters for heavy-boot bodies)
+    public float walkNoiseInterval = 0.5f;
+    [Range(0f, 1f)] public float footstepVolume = 0.6f;
+    private AudioSource stepSource;
 
     public float Stamina { get; private set; }
-    public float Stamina01 => maxStamina > 0f ? Stamina / maxStamina : 0f;
+    public float Stamina01 => MaxStamina > 0f ? Stamina / MaxStamina : 0f;
+    //maxStamina scaled by the current body (CustomBodySO.staminaMultiplier)
+    public float MaxStamina
+    {
+        get
+        {
+            BodyScript body = bodyManager != null ? bodyManager.currentBody : null;
+            float mult = body != null && body.customBodySO != null ? body.customBodySO.staminaMultiplier : 1f;
+            return maxStamina * mult;
+        }
+    }
     public bool IsSprinting { get; private set; }
     public bool IsExhausted { get; private set; }
+    //Adrenaline: boosted (free, faster sprinting) then crashing (slow, no sprint, no stamina regen)
+    public bool IsBoosted => boostTimer > 0f;
+    public bool IsCrashing => !IsBoosted && crashTimer > 0f;
+
+    private float boostTimer;
+    private float crashTimer;
+    private float boostSpeed = 1f;
+    private float crashSpeed = 1f;
 
     private float regenTimer;
     private float noiseTimer;
@@ -40,35 +62,104 @@ public class PlayerSprint : MonoBehaviour
     {
         BodyScript body = bodyManager != null ? bodyManager.currentBody : null;
         if(lastBody != null && lastBody != body) lastBody.speedMultiplier = 1f;
+        //New body may have a smaller stamina pool
+        if(Stamina > MaxStamina) Stamina = MaxStamina;
         lastBody = body;
         if(body == null || Time.timeScale == 0f) return;
 
-        bool moving = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical")).sqrMagnitude > 0.01f;
-        //Slow bodies can't sprint
-        bool canSprint = body.customBodySO == null || !body.customBodySO.isSlow;
+        if(boostTimer > 0f)
+        {
+            boostTimer -= Time.deltaTime;
+            Stamina = MaxStamina;
+            IsExhausted = false;
+        }
+        else if(crashTimer > 0f) crashTimer -= Time.deltaTime;
+
+        bool moving = !body.isPlayingDead && !body.isHiding && PlayerInput.RawMove().sqrMagnitude > 0.01f;
+        //Slow bodies can't sprint, nor can you while dragging or crashing
+        bool canSprint = (body.customBodySO == null || !body.customBodySO.isSlow) && body.dragMultiplier >= 1f && !IsCrashing;
         IsSprinting = canSprint && moving && Input.GetKey(sprintKey) && !IsExhausted && Stamina > 0f;
 
-        if(IsSprinting)
+        if(IsSprinting && !IsBoosted)
         {
             Stamina = Mathf.Max(0f, Stamina - drainPerSecond * Time.deltaTime);
             regenTimer = regenDelay;
             if(Stamina <= 0f) IsExhausted = true;
-
-            noiseTimer -= Time.deltaTime;
-            if(noiseTimer <= 0f)
-            {
-                noiseTimer = noiseInterval;
-                Noise.Make(body.transform.position, noiseLoudness);
-            }
         }
-        else
+        else if(!IsSprinting && !IsCrashing)
         {
-            noiseTimer = 0f;
             if(regenTimer > 0f) regenTimer -= Time.deltaTime;
-            else Stamina = Mathf.Min(maxStamina, Stamina + regenPerSecond * Time.deltaTime);
+            else Stamina = Mathf.Min(MaxStamina, Stamina + regenPerSecond * Time.deltaTime);
             if(IsExhausted && Stamina >= recoverAt) IsExhausted = false;
         }
 
-        body.speedMultiplier = IsSprinting ? sprintMultiplier : 1f;
+        float speed = IsSprinting ? sprintMultiplier : 1f;
+        if(IsBoosted && IsSprinting) speed *= boostSpeed;
+        if(IsCrashing) speed = crashSpeed;
+        body.speedMultiplier = speed;
+        UpdateFootsteps(body, moving);
+    }
+
+    //Adrenaline shot: full stamina that doesn't drain and faster sprinting, then the crash
+    public void ApplyAdrenaline(ItemData shot)
+    {
+        boostTimer = shot.boostTime;
+        crashTimer = shot.crashTime;
+        boostSpeed = shot.boostSpeed;
+        crashSpeed = shot.crashSpeed;
+        Stamina = MaxStamina;
+        IsExhausted = false;
+    }
+
+    //Used by PlayDead. Holds off regen like sprinting does. False once stamina is empty
+    public bool Drain(float amount)
+    {
+        Stamina = Mathf.Max(0f, Stamina - amount);
+        regenTimer = regenDelay;
+        if(Stamina <= 0f) IsExhausted = true;
+        return Stamina > 0f;
+    }
+
+    //Sprinting is always loud; bodies with heavy boots (walkNoise) are heard walking too
+    void UpdateFootsteps(BodyScript body, bool moving)
+    {
+        CustomBodySO so = body.customBodySO;
+        float loudness = 0f;
+        float interval = noiseInterval;
+        if(IsSprinting)
+        {
+            loudness = noiseLoudness * (so != null ? so.sprintNoiseMultiplier : 1f);
+        }
+        else if(moving && so != null && so.walkNoise > 0f)
+        {
+            loudness = so.walkNoise;
+            interval = walkNoiseInterval;
+        }
+
+        if(loudness <= 0f)
+        {
+            noiseTimer = 0f;
+            return;
+        }
+        noiseTimer -= Time.deltaTime;
+        if(noiseTimer > 0f) return;
+        noiseTimer = interval;
+        Noise.Make(body.transform.position, loudness);
+        PlayStep(so);
+    }
+
+    void PlayStep(CustomBodySO so)
+    {
+        if(so == null || so.footstepSounds == null || so.footstepSounds.Length == 0) return;
+        AudioClip clip = so.footstepSounds[Random.Range(0, so.footstepSounds.Length)];
+        if(clip == null) return;
+        if(stepSource == null)
+        {
+            stepSource = gameObject.AddComponent<AudioSource>();
+            stepSource.playOnAwake = false;
+            stepSource.spatialBlend = 0f;
+        }
+        stepSource.pitch = Random.Range(0.9f, 1.1f);
+        stepSource.PlayOneShot(clip, footstepVolume);
     }
 }

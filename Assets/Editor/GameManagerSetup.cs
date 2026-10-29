@@ -22,6 +22,18 @@ public static class GameManagerSetup
         typeof(PlayerHUD),
     };
 
+    //Added fresh if the scene doesn't have one anywhere
+    static readonly Type[] NewSystems =
+    {
+        typeof(BodyFog),
+        typeof(VibrationSense),
+        typeof(PlayDead),
+        typeof(PlayerInventory),
+        typeof(BodyDrag),
+        typeof(Interactor),
+        typeof(ModalUI),
+    };
+
     [MenuItem("Tools/Jam/Create Game Manager")]
     static void CreateGameManager()
     {
@@ -41,6 +53,22 @@ public static class GameManagerSetup
             manager = Undo.AddComponent<GameManager>(managerObj);
         }
         GameObject target = manager.gameObject;
+
+        //New systems that only ever live on the GameManager
+        foreach(var type in NewSystems)
+        {
+            if(target.GetComponent(type) != null || Object.FindAnyObjectByType(type, FindObjectsInactive.Include) != null) continue;
+            Undo.AddComponent(target, type);
+            EditorSceneManager.MarkSceneDirty(target.scene);
+            Debug.Log($"Added {ObjectNames.NicifyVariableName(type.Name)} to the GameManager", target);
+        }
+        if(target.GetComponent<CapsuleSpawner>() == null && Object.FindAnyObjectByType<CapsuleSpawner>(FindObjectsInactive.Include) == null)
+        {
+            CapsuleSpawner spawner = Undo.AddComponent<CapsuleSpawner>(target);
+            BodyCapsuleTools.FillBodyTypes(spawner);
+            EditorSceneManager.MarkSceneDirty(target.scene);
+            Debug.Log("Added Capsule Spawner to the GameManager", target);
+        }
 
         //Old component -> its copy on the GameManager
         var moved = new Dictionary<Object, Object>();
@@ -64,7 +92,7 @@ public static class GameManagerSetup
         }
         if(moved.Count == 0)
         {
-            Debug.Log("Nothing to move, the GameManager already has everything");
+            Debug.Log("Nothing to move, the GameManager already has everything. Save the scene if anything was added");
             Selection.activeGameObject = target;
             return;
         }
