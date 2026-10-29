@@ -58,7 +58,11 @@ public class RoomDoor : MonoBehaviour
             SpeechBubble.Say(body.transform, Lore.FakeDoor, 2.5f);
             return;
         }
-        if(IsLocked) return;
+        if (IsLocked)
+        {
+            SFXManager.Instance.PlaySFX("lock");
+            return;
+        }
         StartCoroutine(GoThrough(body));
     }
 
@@ -109,7 +113,7 @@ public class RoomDoor : MonoBehaviour
     {
         get
         {
-            if(!isShortcut) return false;
+            if (!isShortcut) return false;
             BodyManager bodyManager = GameManager.Get<BodyManager>();
             return bodyManager == null || !bodyManager.CurrentCanUnlockDoors;
         }
@@ -135,7 +139,7 @@ public class RoomDoor : MonoBehaviour
             blackScreen.SetText("", "");
             yield return blackScreen.FadeIn(fadeTime);
         }
-
+        SFXManager.Instance.PlaySFX("door");
         Vector3 from = body.transform.position;
         Vector3 to = linkedDoor.ExitPoint;
         to.z = from.z;

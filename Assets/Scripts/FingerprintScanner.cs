@@ -57,5 +57,6 @@ public class FingerprintScanner : Interactable
         if(openSprite != null) GetComponent<SpriteRenderer>().sprite = openSprite;
         SpeechBubble.Say(transform, acceptedLine, 3f, lineHeight);
         Inventory.Give(emptyBattery, transform.position);
+        SFXManager.Instance.PlaySFX("scan");
     }
 }

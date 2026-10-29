@@ -181,6 +181,7 @@ public class PlayerInventory : MonoBehaviour
         if(item == null || IsFull) return false;
         items.Add(new ItemStack(item, charges > 0 ? charges : item.StartCharges));
         OnChanged?.Invoke();
+        SFXManager.Instance.PlaySFX("item");
         return true;
     }
 
@@ -242,6 +243,8 @@ public class PlayerInventory : MonoBehaviour
                 return;
             case ItemKind.Weapon:
                 if(UseWeapon(body, stack)) SpendCharge(stack);
+                if (item.ranged == true) SFXManager.Instance.PlaySFX("shoot");
+                else SFXManager.Instance.PlaySFX("stab");
                 return;
             case ItemKind.Lure:
                 RadioLure.Place(item, body.transform.position);

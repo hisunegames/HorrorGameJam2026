@@ -205,6 +205,7 @@ public class ChemicalChargingStation : Interactable
         if(Active == this) Active = null;
         if(marker != null) marker.enabled = false;
         ClearPicks();
+        SFXManager.Instance.PlaySFX("chem");
     }
 
     void ClearPicks()

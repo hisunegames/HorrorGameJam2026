@@ -61,6 +61,7 @@ public class ArmedTrap : MonoBehaviour
     void Snap()
     {
         snapped = true;
+        SFXManager.Instance.PlaySFX("bear");
         if(sr != null && item.snappedSprite != null) sr.sprite = item.snappedSprite;
         //Stays where it went off, even if the body it was on gets dragged later
         transform.SetParent(null, true);
